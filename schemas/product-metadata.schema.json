@@ -1,0 +1,146 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "NO3D Tools Product Metadata Schema",
+  "description": "Schema for validating product metadata JSON files in the NO3D Tools library",
+  "type": "object",
+  "required": [
+    "title",
+    "handle",
+    "description",
+    "vendor",
+    "product_type",
+    "tags",
+    "status",
+    "variants",
+    "metafields"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Product title/name"
+    },
+    "handle": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "URL-friendly product handle (lowercase, hyphens only)"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 2000,
+      "description": "Product description"
+    },
+    "vendor": {
+      "type": "string",
+      "enum": ["The Well Tarot"],
+      "description": "Product vendor"
+    },
+    "product_type": {
+      "type": "string",
+      "enum": [
+        "Blender Add-on",
+        "Geometry Node",
+        "Material",
+        "Collection",
+        "Mesh Object",
+        "Node Group"
+      ],
+      "description": "Type of Blender asset"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 50
+      },
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "description": "Product tags for categorization"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "draft", "archived"],
+      "description": "Product status"
+    },
+    "variants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["price", "sku", "inventory_policy", "inventory_management"],
+        "properties": {
+          "price": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d{2}$",
+            "description": "Price in format XX.XX"
+          },
+          "sku": {
+            "type": "string",
+            "pattern": "^NO3D-TOOLS-[A-Z0-9._-]+$",
+            "description": "Stock keeping unit with NO3D-TOOLS prefix"
+          },
+          "inventory_policy": {
+            "type": "string",
+            "enum": ["continue", "deny"],
+            "description": "Inventory policy"
+          },
+          "inventory_management": {
+            "type": "string",
+            "enum": ["shopify", "polar"],
+            "description": "Inventory management system"
+          }
+        }
+      },
+      "minItems": 1,
+      "maxItems": 5,
+      "description": "Product variants"
+    },
+    "metafields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["namespace", "key", "value", "type"],
+        "properties": {
+          "namespace": {
+            "type": "string",
+            "enum": ["no3d_tools", "polar", "shopify"],
+            "description": "Metafield namespace"
+          },
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50,
+            "description": "Metafield key"
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Metafield value"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "single_line_text_field",
+              "multi_line_text_field",
+              "date",
+              "number_integer",
+              "number_decimal",
+              "boolean",
+              "json"
+            ],
+            "description": "Metafield data type"
+          }
+        }
+      },
+      "minItems": 5,
+      "description": "Product metafields"
+    }
+  },
+  "additionalProperties": false
+}

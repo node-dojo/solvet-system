@@ -1,0 +1,70 @@
+---
+title: "Product Name"
+description: "Brief description of the product"
+version: "1.0.0"
+blender_version: "4.5+"
+asset_type: "Geometry"
+tags: ["blender", "addon", "3d", "asset"]
+author: "The Well Tarot"
+created_date: "2025-01-01"
+---
+
+# Product Name
+
+## Description
+
+Detailed description of what this product does and how it helps users. This should be more comprehensive than the JSON description and can include:
+
+- What the product is
+- What problems it solves
+- How it fits into a workflow
+- Key features and benefits
+
+## Features
+
+- Feature 1: Description of what this feature does
+- Feature 2: Another key capability
+- Feature 3: Additional functionality
+
+## Usage Instructions
+
+### Basic Usage
+
+1. Step 1: How to use the product
+2. Step 2: Next steps
+3. Step 3: Final steps
+
+### Advanced Usage
+
+- Advanced technique 1
+- Advanced technique 2
+- Pro tips and tricks
+
+## Technical Details
+
+- **Blender Version**: 4.5+
+- **Asset Type**: Geometry Node / Material / Collection / etc.
+- **File Size**: ~X MB
+- **Dependencies**: None / List any dependencies
+
+## Examples
+
+Include examples of how this product can be used:
+
+- Use case 1
+- Use case 2
+- Use case 3
+
+## Changelog
+
+### Version 1.0.0
+- Initial release
+- Core functionality
+
+## Support
+
+For questions or issues with this product, please contact [support information].
+
+## License
+
+[License information if applicable]

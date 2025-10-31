@@ -1,0 +1,86 @@
+{
+  "title": "Product Name",
+  "handle": "product-name",
+  "description": "Detailed description of what this product does and how it helps users. Should be informative and compelling.",
+  "vendor": "The Well Tarot",
+  "product_type": "Blender Add-on",
+  "tags": [
+    "blender",
+    "addon",
+    "3d",
+    "asset",
+    "geometry",
+    "node"
+  ],
+  "status": "active",
+  "variants": [
+    {
+      "price": "0.00",
+      "sku": "NO3D-TOOLS-PRODUCT-NAME",
+      "inventory_policy": "continue",
+      "inventory_management": "polar"
+    }
+  ],
+  "metafields": [
+    {
+      "namespace": "no3d_tools",
+      "key": "asset_type",
+      "value": "GEOMETRY",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "blender_version",
+      "value": "4.5+",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "export_date",
+      "value": "2025-01-01",
+      "type": "date"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "source_file",
+      "value": "source_file_name.blend",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "blend_file",
+      "value": "Product Name.blend",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "thumbnail",
+      "value": "icon_Product Name.png",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "catalog_name",
+      "value": "Default Catalog",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "no3d_tools",
+      "key": "geometry_stats",
+      "value": "Vertices: 0, Faces: 0, Edges: 0",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "file_download_url",
+      "value": "https://polar.sh/...",
+      "type": "single_line_text_field"
+    },
+    {
+      "namespace": "polar",
+      "key": "file_size_bytes",
+      "value": "0",
+      "type": "number_integer"
+    }
+  ]
+}
