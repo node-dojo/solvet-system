@@ -349,6 +349,63 @@
             margin-left: 0.5rem;
         }
 
+        .media-thumbnail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+
+        .media-thumbnail-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .media-thumbnail-preview {
+            width: 100%;
+            aspect-ratio: 1;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #f8f8f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .media-thumbnail-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-thumbnail,
+        .model-thumbnail,
+        .file-thumbnail {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+
+        .video-icon,
+        .model-icon,
+        .file-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .video-label,
+        .model-label,
+        .file-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+
         .product-info {
             flex: 1;
         }
@@ -491,13 +548,19 @@
         .variant-item,
         .metafield-item,
         .changelog-entry {
-            background: #f8f9fa;
             padding: 0.75rem;
             border-radius: 4px;
             margin-bottom: 0.5rem;
+            border: 1px solid #e0e0e0;
         }
 
-        .changelog-entry {
+        .changelog-entry.readonly {
+            background: #fff;
+            border-left: 2px solid #e0e0e0;
+        }
+
+        .changelog-entry.editing {
+            background: #f8f9fa;
             border-left: 3px solid #007bff;
         }
 
@@ -506,6 +569,42 @@
             gap: 0.5rem;
             margin-bottom: 0.5rem;
             align-items: center;
+        }
+
+        .changelog-readonly-header {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            width: 100%;
+        }
+
+        .changelog-version {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .changelog-date {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .changelog-readonly-changes {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .changelog-readonly-changes li {
+            padding: 0.25rem 0;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .changelog-edit-header {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            width: 100%;
         }
 
         .changelog-entry-header input[type="text"] {
@@ -630,6 +729,66 @@
             max-width: 100%;
             max-height: 80vh;
             border-radius: 4px;
+        }
+
+        /* Markdown Editor Modal */
+        .markdown-editor-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            flex-direction: column;
+        }
+
+        .markdown-editor-modal.open {
+            display: flex;
+        }
+
+        .markdown-editor-header {
+            background: #fff;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .markdown-editor-header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+        }
+
+        .markdown-editor-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .markdown-editor-body {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .markdown-editor-textarea {
+            flex: 1;
+            width: 100%;
+            padding: 1.5rem;
+            border: none;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            outline: none;
+        }
+
+        .markdown-editor-textarea::placeholder {
+            color: #6a6a6a;
         }
 
         .message {
@@ -792,6 +951,36 @@
     <div class="modal" id="imageModal">
         <div class="modal-content">
             <img class="modal-image" id="modalImage" alt="Product icon">
+        </div>
+    </div>
+
+    <!-- Markdown Editor Modal -->
+    <div class="markdown-editor-modal" id="markdownEditorModal">
+        <div class="markdown-editor-header">
+            <h2 id="markdownEditorTitle">Edit Documentation</h2>
+            <div class="markdown-editor-actions">
+                <button class="btn btn-primary" id="saveMarkdownBtn">Save</button>
+                <button class="btn btn-secondary" id="cancelMarkdownBtn">Cancel</button>
+            </div>
+        </div>
+        <div class="markdown-editor-body">
+            <textarea class="markdown-editor-textarea" id="markdownEditorTextarea" 
+                      placeholder="# Product Documentation
+
+Write your product documentation here using Markdown.
+
+## Features
+
+- Support for **bold** and *italic* text
+- Code blocks with syntax highlighting
+- Images: ![alt text](image.png)
+- Videos: ![video](video.mp4) or [VIDEO: https://youtube.com/watch?v=...]
+- Lists and more
+
+## Images and Videos
+
+Place media files in the \`docs-assets/\` folder in your product directory.
+They will be automatically synced to the website."></textarea>
         </div>
     </div>
 
@@ -1519,23 +1708,49 @@
                                style="display: none;"
                                onchange="handleMediaFileSelect(event, ${index})">
                         ${product.mediaFiles && product.mediaFiles.length > 0 ? `
-                            <ul class="media-files-list">
-                                ${product.mediaFiles.map((file, fileIndex) => `
-                                    <li>
-                                        <input type="text" 
-                                               class="file-name-input" 
-                                               value="${escapeHtml(file.name)}" 
-                                               data-original-name="${escapeHtml(file.name)}"
-                                               data-file-index="${fileIndex}"
-                                               data-product-index="${index}"
-                                               onblur="handleMediaFileNameChange(event, ${index}, ${fileIndex})"
-                                               onkeypress="if(event.key==='Enter') event.target.blur()"
-                                               style="flex: 1; font-family: 'Courier New', monospace; font-size: 0.85rem; padding: 0.25rem; border: 1px solid #ddd; border-radius: 3px; background: white;">
-                                        <span class="file-type">${file.type}</span>
-                                        ${file.size ? `<span class="file-size">${formatFileSize(file.size)}</span>` : ''}
-                                    </li>
-                                `).join('')}
-                            </ul>
+                            <div class="media-thumbnail-grid">
+                                ${product.mediaFiles.map((file, fileIndex) => {
+                                    const fileExt = file.name.split('.').pop().toLowerCase();
+                                    const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(fileExt);
+                                    const isVideo = ['mp4', 'webm', 'ogg', 'mov'].includes(fileExt);
+                                    const is3DModel = ['usd', 'obj', 'stl'].includes(fileExt);
+                                    const rawUrl = `https://raw.githubusercontent.com/${repoConfig.owner}/${repoConfig.repo}/${repoConfig.branch}/${file.path || `${product.folderName} card assets/${file.name}`}`;
+                                    
+                                    return `
+                                        <div class="media-thumbnail-item" data-file-index="${fileIndex}" data-product-index="${index}">
+                                            <div class="media-thumbnail-preview">
+                                                ${isImage ? `
+                                                    <img src="${rawUrl}" alt="${escapeHtml(file.name)}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIGZpbGw9IiNFOEU4RTgiLz48dGV4dCB4PSIzMiIgeT0iMzQiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI4IiBmaWxsPSIjMDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5JbWFnZTwvdGV4dD48L3N2Zz4='">
+                                                ` : isVideo ? `
+                                                    <div class="video-thumbnail">
+                                                        <div class="video-icon">▶</div>
+                                                        <span class="video-label">Video</span>
+                                                    </div>
+                                                ` : is3DModel ? `
+                                                    <div class="model-thumbnail">
+                                                        <div class="model-icon">📦</div>
+                                                        <span class="model-label">3D Model</span>
+                                                    </div>
+                                                ` : `
+                                                    <div class="file-thumbnail">
+                                                        <div class="file-icon">📄</div>
+                                                        <span class="file-label">File</span>
+                                                    </div>
+                                                `}
+                                            </div>
+                                            <input type="text" 
+                                                   class="file-name-input" 
+                                                   value="${escapeHtml(file.name)}" 
+                                                   data-original-name="${escapeHtml(file.name)}"
+                                                   data-file-index="${fileIndex}"
+                                                   data-product-index="${index}"
+                                                   onblur="handleMediaFileNameChange(event, ${index}, ${fileIndex})"
+                                                   onkeypress="if(event.key==='Enter') event.target.blur()"
+                                                   style="width: 100%; font-family: 'Courier New', monospace; font-size: 0.75rem; padding: 0.25rem; border: 1px solid #ddd; border-radius: 3px; background: white; margin-top: 0.25rem;">
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
                         ` : `
                             <div style="color: #999; font-size: 0.85rem; padding: 0.5rem; text-align: center;">
                                 No media files found
@@ -1545,6 +1760,13 @@
                 </div>
 
                 <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+                    <label class="form-label" style="margin-bottom: 0;">Documentation</label>
+                    <button class="btn btn-secondary btn-small" onclick="openMarkdownEditor(${index})" 
+                            style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">
+                        📝 Edit Docs
+                    </button>
+                </div>
+                <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
                     <label class="form-label" style="margin-bottom: 0;">Changelog</label>
                     <button class="btn btn-success btn-small" onclick="pushProductToGitHub(${index})" 
                             ${dirtyProducts.has(index) ? '' : 'disabled'} 
@@ -1554,27 +1776,45 @@
                 </div>
                 <div class="changelog-container">
                         ${(product.data.changelog && product.data.changelog.length > 0) 
-                            ? product.data.changelog.map((entry, entryIndex) => `
-                                <div class="changelog-entry">
+                            ? product.data.changelog.map((entry, entryIndex) => {
+                                const changesArray = Array.isArray(entry.changes) 
+                                    ? entry.changes 
+                                    : (typeof entry.changes === 'string' && entry.changes ? [entry.changes] : []);
+                                const entryEditState = product.changelogEditStates && product.changelogEditStates[entryIndex] ? 'editing' : 'readonly';
+                                
+                                return `
+                                <div class="changelog-entry ${entryEditState}" data-entry-index="${entryIndex}" data-product-index="${index}">
                                     <div class="changelog-entry-header">
-                                        <input type="text" class="form-input" 
-                                               value="${escapeHtml(entry.version || '')}" 
-                                               style="max-width: 120px;"
-                                               onchange="updateChangelogEntry(${index}, ${entryIndex}, 'version', this.value)">
-                                        <input type="date" class="form-input" 
-                                               value="${escapeHtml(entry.date || '')}" 
-                                               style="max-width: 150px;"
-                                               onchange="updateChangelogEntry(${index}, ${entryIndex}, 'date', this.value)">
-                                        <button class="btn btn-danger btn-small" onclick="removeChangelogEntry(${index}, ${entryIndex})">Remove</button>
+                                        ${entryEditState === 'readonly' ? `
+                                            <div class="changelog-readonly-header">
+                                                <span class="changelog-version">${escapeHtml(entry.version || 'No version')}</span>
+                                                <span class="changelog-date">${escapeHtml(entry.date || 'No date')}</span>
+                                                <button class="btn btn-secondary btn-small" onclick="toggleChangelogEdit(${index}, ${entryIndex})">Edit</button>
+                                            </div>
+                                        ` : `
+                                            <div class="changelog-edit-header">
+                                                <input type="text" class="form-input" 
+                                                       value="${escapeHtml(entry.version || '')}" 
+                                                       style="max-width: 120px;"
+                                                       onchange="updateChangelogEntry(${index}, ${entryIndex}, 'version', this.value)">
+                                                <input type="date" class="form-input" 
+                                                       value="${escapeHtml(entry.date || '')}" 
+                                                       style="max-width: 150px;"
+                                                       onchange="updateChangelogEntry(${index}, ${entryIndex}, 'date', this.value)">
+                                                <button class="btn btn-secondary btn-small" onclick="toggleChangelogEdit(${index}, ${entryIndex})">Done</button>
+                                                <button class="btn btn-danger btn-small" onclick="removeChangelogEntry(${index}, ${entryIndex})">Remove</button>
+                                            </div>
+                                        `}
                                     </div>
                                     <div class="changelog-changes">
-                                        ${(() => {
-                                            // Normalize changes to always be an array
-                                            // Handle both string (blog posts) and array (products) formats
-                                            const changesArray = Array.isArray(entry.changes) 
-                                                ? entry.changes 
-                                                : (typeof entry.changes === 'string' && entry.changes ? [entry.changes] : []);
-                                            return changesArray.length > 0 
+                                        ${entryEditState === 'readonly' ? `
+                                            ${changesArray.length > 0 ? `
+                                                <ul class="changelog-readonly-changes">
+                                                    ${changesArray.map(change => `<li>${escapeHtml(change)}</li>`).join('')}
+                                                </ul>
+                                            ` : '<div style="color: #999; font-style: italic; padding: 0.5rem;">No changes listed</div>'}
+                                        ` : `
+                                            ${changesArray.length > 0 
                                                 ? changesArray.map((change, changeIndex) => `
                                                     <div class="changelog-change-item">
                                                         <input type="text" class="form-input" 
@@ -1583,12 +1823,13 @@
                                                         <button class="btn btn-danger btn-small" onclick="removeChangelogChange(${index}, ${entryIndex}, ${changeIndex})">×</button>
                                                     </div>
                                                 `).join('')
-                                                : '';
-                                        })()}
-                                        <button class="btn btn-secondary btn-small" onclick="addChangelogChange(${index}, ${entryIndex})" style="margin-top: 0.25rem;">+ Add Change</button>
+                                                : ''}
+                                            <button class="btn btn-secondary btn-small" onclick="addChangelogChange(${index}, ${entryIndex})" style="margin-top: 0.25rem;">+ Add Change</button>
+                                        `}
                                     </div>
                                 </div>
-                            `).join('')
+                            `;
+                            }).join('')
                             : '<div style="padding: 1rem; text-align: center; color: #666; font-style: italic;">No changelog entries yet. Changelog entries will be automatically added when products are synced.</div>'
                         }
                         <button class="btn btn-secondary btn-small" onclick="addChangelogEntry(${index})" style="margin-top: 0.5rem;">+ Add Changelog Entry</button>
@@ -1722,7 +1963,9 @@
         async function uploadMediaFile(index, file) {
             const product = products[index];
             const fileName = file.name;
-            const filePath = `${product.folderName}/${fileName}`;
+            // Save to card assets subfolder
+            const cardAssetsFolder = `${product.folderName} card assets`;
+            const filePath = `${cardAssetsFolder}/${fileName}`;
 
             // Read file as base64
             const reader = new FileReader();
@@ -1833,31 +2076,48 @@
         }
 
         async function reloadProductFiles(index) {
-            // Reload the product directory to get updated file list
+            // Reload the product directory to get updated file list from card assets folder
             const product = products[index];
             try {
-                const dirContents = await fetchGitHubAPI(`/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${product.folderName}`);
-                if (dirContents) {
+                const cardAssetsFolder = `${product.folderName} card assets`;
+                let dirContents = [];
+                
+                // Try to load card assets folder
+                try {
+                    dirContents = await fetchGitHubAPI(`/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${cardAssetsFolder}`);
+                } catch (error) {
+                    // Card assets folder doesn't exist yet, that's okay
+                    console.log(`Card assets folder doesn't exist yet for ${product.data.title}`);
+                    products[index].mediaFiles = [];
+                    return;
+                }
+                
+                if (dirContents && Array.isArray(dirContents)) {
                     const mediaFiles = [];
                     for (const item of dirContents) {
-                        if (item.type === 'file' && !item.name.endsWith('.json')) {
+                        if (item.type === 'file') {
                             const ext = item.name.split('.').pop().toLowerCase();
                             let type = 'other';
-                            if (item.name.startsWith('icon_') && item.name.endsWith('.png')) {
-                                type = 'icon';
-                            } else if (item.name.endsWith('.blend')) {
-                                type = 'blend';
-                            } else if (['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext)) {
+                            if (['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext)) {
                                 type = 'image';
+                            } else if (['mp4', 'webm', 'ogg', 'mov'].includes(ext)) {
+                                type = 'video';
+                            } else if (['usd', 'obj', 'stl'].includes(ext)) {
+                                type = '3dmodel';
+                            } else {
+                                type = 'other';
                             }
-                            mediaFiles.push({ name: item.name, type: type, size: item.size });
+                            mediaFiles.push({ name: item.name, type: type, size: item.size, path: `${cardAssetsFolder}/${item.name}` });
                         }
                     }
                     products[index].mediaFiles = mediaFiles;
-                    console.log(`✅ Reloaded ${mediaFiles.length} media files for ${product.data.title}`);
+                    console.log(`✅ Reloaded ${mediaFiles.length} media files from card assets for ${product.data.title}`);
+                } else {
+                    products[index].mediaFiles = [];
                 }
             } catch (error) {
                 console.error('Failed to reload product files:', error);
+                products[index].mediaFiles = [];
             }
         }
 
@@ -1914,8 +2174,9 @@
 
         async function renameMediaFile(productIndex, oldName, newName) {
             const product = products[productIndex];
-            const oldPath = `${product.folderName}/${oldName}`;
-            const newPath = `${product.folderName}/${newName}`;
+            const cardAssetsFolder = `${product.folderName} card assets`;
+            const oldPath = `${cardAssetsFolder}/${oldName}`;
+            const newPath = `${cardAssetsFolder}/${newName}`;
 
             if (!repoConfig.token) {
                 throw new Error('GitHub token required');
@@ -2440,6 +2701,15 @@
                     renderProducts();
                 }
             }
+        }
+
+        function toggleChangelogEdit(index, entryIndex) {
+            if (!products[index].changelogEditStates) {
+                products[index].changelogEditStates = {};
+            }
+            // Toggle edit state for this entry
+            products[index].changelogEditStates[entryIndex] = !products[index].changelogEditStates[entryIndex];
+            renderProducts();
         }
 
         function markDirty(index) {
@@ -3123,9 +3393,127 @@
         window.removeChangelogChange = removeChangelogChange;
         window.pushProductToGitHub = pushProductToGitHub;
         window.toggleCollapsible = toggleCollapsible;
+        // Markdown Editor Functions
+        let currentMarkdownProductIndex = null;
+
+        async function openMarkdownEditor(index) {
+            currentMarkdownProductIndex = index;
+            const product = products[index];
+            if (!product) {
+                showMessage('Product not found', 'error');
+                return;
+            }
+
+            const modal = document.getElementById('markdownEditorModal');
+            const title = document.getElementById('markdownEditorTitle');
+            const textarea = document.getElementById('markdownEditorTextarea');
+
+            // Set title
+            title.textContent = `Edit Documentation: ${product.data.title}`;
+
+            // Show modal
+            modal.classList.add('open');
+            textarea.value = '';
+            textarea.disabled = true;
+
+            try {
+                // Get product folder name
+                const folderName = product.folderName || product.dirName || null;
+                const productId = product.data.handle || product.data.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
+                // Load markdown from server
+                const params = new URLSearchParams();
+                if (folderName) {
+                    params.append('folderName', folderName);
+                } else {
+                    params.append('productId', productId);
+                }
+
+                const response = await fetch(`http://localhost:3000/api/get-markdown?${params.toString()}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    textarea.value = data.content || '';
+                    textarea.disabled = false;
+                    textarea.focus();
+                } else {
+                    showMessage(`Error loading markdown: ${data.error}`, 'error');
+                    textarea.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error loading markdown:', error);
+                showMessage(`Error loading markdown: ${error.message}`, 'error');
+                textarea.disabled = false;
+            }
+        }
+
+        async function saveMarkdown() {
+            if (currentMarkdownProductIndex === null) return;
+
+            const product = products[currentMarkdownProductIndex];
+            if (!product) {
+                showMessage('Product not found', 'error');
+                return;
+            }
+
+            const textarea = document.getElementById('markdownEditorTextarea');
+            const content = textarea.value;
+
+            try {
+                // Get product folder name
+                const folderName = product.folderName || product.dirName || null;
+                const productId = product.data.handle || product.data.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
+                const response = await fetch('http://localhost:3000/api/save-markdown', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        folderName: folderName,
+                        productId: folderName ? null : productId,
+                        content: content
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage('Documentation saved successfully!', 'success');
+                    closeMarkdownEditor();
+                } else {
+                    showMessage(`Error saving markdown: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error saving markdown:', error);
+                showMessage(`Error saving markdown: ${error.message}`, 'error');
+            }
+        }
+
+        function closeMarkdownEditor() {
+            const modal = document.getElementById('markdownEditorModal');
+            modal.classList.remove('open');
+            currentMarkdownProductIndex = null;
+        }
+
+        // Wire up markdown editor buttons
+        document.getElementById('saveMarkdownBtn').addEventListener('click', saveMarkdown);
+        document.getElementById('cancelMarkdownBtn').addEventListener('click', closeMarkdownEditor);
+
+        // Close editor on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('markdownEditorModal');
+                if (modal.classList.contains('open')) {
+                    closeMarkdownEditor();
+                }
+            }
+        });
+
         window.showImageModal = showImageModal;
         window.saveConfig = saveConfig;
         window.closeConfigModal = closeConfigModal;
+        window.openMarkdownEditor = openMarkdownEditor;
 
         // Auto-load if config exists
         if (savedConfig) {
