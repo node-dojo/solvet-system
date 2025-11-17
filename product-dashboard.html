@@ -1,0 +1,3137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOLVET Product Library Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: #fff;
+            border-bottom: 2px solid #e0e0e0;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #222;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .product-count {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .controls {
+            background: #fff;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .filter-select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            background: white;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+        }
+
+        .product-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: box-shadow 0.2s;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .product-card.dirty {
+            border-color: #ffc107;
+            border-width: 2px;
+        }
+
+        .product-header {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: flex-start;
+        }
+
+        .product-icon {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #f9f9f9;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .product-icon:hover {
+            border-color: #007bff;
+        }
+
+        .icon-upload-zone {
+            width: 80px;
+            height: 80px;
+            border: 2px dashed #e0e0e0;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .icon-upload-zone:hover {
+            border-color: #007bff;
+            background: #f0f7ff;
+        }
+
+        .icon-upload-zone.drag-over {
+            border-color: #28a745;
+            background: #f0fff4;
+            border-style: solid;
+        }
+
+        .icon-upload-zone img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .icon-upload-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: white;
+            font-size: 0.7rem;
+            border-radius: 4px;
+        }
+
+        .icon-upload-zone:hover .icon-upload-overlay {
+            display: flex;
+        }
+
+        .icon-upload-text {
+            font-size: 0.65rem;
+            color: #666;
+            text-align: center;
+            margin-top: 0.25rem;
+        }
+
+        .icon-uploading {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .icon-upload-spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #007bff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .file-list-section {
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 0.75rem;
+            background: #f9f9f9;
+            margin-top: 0.5rem;
+        }
+
+        .media-upload-zone {
+            border: 2px dashed #ccc;
+            border-radius: 4px;
+            padding: 1rem;
+            text-align: center;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 0.75rem;
+        }
+
+        .media-upload-zone:hover {
+            border-color: #007bff;
+            background: #f0f7ff;
+        }
+
+        .media-upload-zone.drag-over {
+            border-color: #28a745;
+            background: #f0fff4;
+            border-style: solid;
+        }
+
+        .media-upload-zone .upload-text {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        .media-upload-zone .upload-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .file-list-section .form-label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .download-filename {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 0.5rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #333;
+            margin-bottom: 0.75rem;
+            word-break: break-all;
+        }
+
+        .media-files-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .media-files-list li {
+            padding: 0.4rem 0.5rem;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .media-files-list li:last-child {
+            border-bottom: none;
+        }
+
+        .media-files-list li .file-name-input {
+            flex: 1;
+            font-family: 'Courier New', monospace;
+            color: #555;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.85rem;
+            background: white;
+            transition: border-color 0.2s;
+        }
+
+        .media-files-list li .file-name-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+        }
+
+        .media-files-list li .file-name-input.changed {
+            border-color: #ffc107;
+            background: #fffbf0;
+        }
+
+        .media-files-list li .file-type {
+            font-size: 0.75rem;
+            color: #999;
+            text-transform: uppercase;
+            margin-left: 0.5rem;
+        }
+
+        .media-files-list li .file-size {
+            font-size: 0.75rem;
+            color: #999;
+            margin-left: 0.5rem;
+        }
+
+        .product-info {
+            flex: 1;
+        }
+
+        .product-title-input {
+            font-size: 1.1rem;
+            font-weight: 600;
+            width: 100%;
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-title-input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .file-status {
+            display: flex;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .file-badge {
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            background: #e9ecef;
+        }
+
+        .file-badge.exists {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .file-badge.missing {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .form-group {
+            margin-bottom: 0.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 0.25rem;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .form-input.invalid,
+        .form-textarea.invalid,
+        .form-select.invalid {
+            border-color: #dc3545;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .tags-input {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+
+        .tags-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
+        }
+
+        .tag {
+            background: #e9ecef;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+        }
+
+        .collapsible {
+            margin-top: 1rem;
+        }
+
+        .collapsible-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .collapsible-header:hover {
+            background: #e9ecef;
+        }
+
+        .collapsible-content {
+            padding: 1rem;
+            border: 1px solid #e0e0e0;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            display: none;
+        }
+
+        .collapsible-content.open {
+            display: block;
+        }
+
+        .variant-item,
+        .metafield-item,
+        .changelog-entry {
+            background: #f8f9fa;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .changelog-entry {
+            border-left: 3px solid #007bff;
+        }
+
+        .changelog-entry-header {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            align-items: center;
+        }
+
+        .changelog-entry-header input[type="text"] {
+            flex: 0 0 auto;
+        }
+
+        .changelog-entry-header input[type="date"] {
+            flex: 0 0 auto;
+        }
+
+        .changelog-changes {
+            margin-top: 0.5rem;
+        }
+
+        .changelog-change-item {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+            align-items: center;
+        }
+
+        .changelog-change-item input {
+            flex: 1;
+        }
+
+        .btn-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .metafield-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 120px;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .btn-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #218838;
+        }
+
+        .btn-success:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-draft {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-archived {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.open {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: auto;
+        }
+
+        .modal-image {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 4px;
+        }
+
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 4px;
+            z-index: 2000;
+            animation: slideIn 0.3s;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #666;
+        }
+
+        .empty-state h2 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        /* Library Tabs */
+        .library-tabs {
+            background: #fff;
+            border-bottom: 2px solid #e0e0e0;
+            display: flex;
+            gap: 0;
+            padding: 0 2rem;
+        }
+
+        .library-tab {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .library-tab:hover {
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        .library-tab.active {
+            color: #007bff;
+            border-bottom-color: #007bff;
+            background: #f8f9fa;
+        }
+
+        .library-tab-icon {
+            font-size: 1.1rem;
+        }
+
+        .library-tab.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>SOLVET Product Library Dashboard</h1>
+        <div class="header-controls">
+            <span class="product-count" id="productCount">No products loaded</span>
+            <button class="btn btn-secondary" id="configBtn">Configure Repo</button>
+            <button class="btn btn-secondary" id="loadBtn" disabled>Load Products</button>
+            <button class="btn btn-primary" id="saveBtn" disabled>Export Changes</button>
+            <button class="btn btn-success" id="pushAllBtn" disabled>Push All Changes</button>
+        </div>
+    </div>
+
+    <!-- Library Tabs -->
+    <div class="library-tabs" id="libraryTabs">
+        <!-- Tabs will be dynamically generated from library config -->
+    </div>
+
+    <div class="modal" id="configModal">
+        <div class="modal-content" style="max-width: 500px;">
+            <h2 style="margin-bottom: 1rem;">GitHub Repository Configuration</h2>
+            <div class="form-group">
+                <label class="form-label">Repository Owner</label>
+                <input type="text" class="form-input" id="repoOwner" value="node-dojo" placeholder="node-dojo">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Repository Name</label>
+                <input type="text" class="form-input" id="repoName" value="no3d-tools-library" placeholder="no3d-tools-library">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Branch</label>
+                <input type="text" class="form-input" id="repoBranch" value="main" placeholder="main">
+            </div>
+            <div class="form-group">
+                <label class="form-label">GitHub Token (Required for private repos)</label>
+                <input type="password" class="form-input" id="githubToken" placeholder="ghp_... or set via ?token=xxx in URL">
+                <small style="color: #666; font-size: 0.85rem;">
+                    <strong>For private repos:</strong> Personal Access Token (PAT) required with <code>repo</code> scope.<br>
+                    <strong>For public repos:</strong> Optional (increases rate limit from 60 to 5000 req/hour).<br>
+                    <strong>Note:</strong> Deploy keys (SSH) don't work with GitHub API - only for Git operations.<br>
+                    Token can be set via URL: <code>?token=ghp_xxx</code> or localStorage: <code>github_token</code>
+                </small>
+            </div>
+            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                <button class="btn btn-primary" onclick="saveConfig()">Save & Load</button>
+                <button class="btn btn-secondary" onclick="closeConfigModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls" id="controls" style="display: none;">
+        <input type="text" class="search-box" id="searchBox" placeholder="Search products...">
+        <select class="filter-select" id="statusFilter">
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="draft">Draft</option>
+            <option value="archived">Archived</option>
+        </select>
+        <select class="filter-select" id="sortSelect">
+            <option value="name">Sort by Name</option>
+            <option value="status">Sort by Status</option>
+        </select>
+    </div>
+
+    <div id="productsGrid" class="products-grid">
+        <div class="empty-state">
+            <h2>No Products Loaded</h2>
+            <p>Click "Configure Repo" to set up GitHub repository, then "Load Products" to fetch products</p>
+        </div>
+    </div>
+
+    <div class="modal" id="imageModal">
+        <div class="modal-content">
+            <img class="modal-image" id="modalImage" alt="Product icon">
+        </div>
+    </div>
+
+    <script>
+        // ============================================================================
+        // Multi-Library Configuration
+        // ============================================================================
+        let librariesConfig = null; // Loaded from LibraryManager
+        let activeLibrary = null; // Currently selected library
+        let allProducts = []; // All products across all libraries
+        let products = []; // Filtered products for active library
+        let dirtyProducts = new Set();
+
+        // Legacy config (will be populated from active library)
+        let repoConfig = {
+            owner: 'node-dojo',
+            repo: 'no3d-tools-library',
+            branch: 'main',
+            token: null
+        };
+
+        // Dynamic product types and metafields (loaded from library config)
+        let productTypes = [];
+        let metafieldKeys = [];
+        let requiredFields = [];
+
+        // Constants
+        const metafieldTypes = [
+            'single_line_text_field',
+            'multi_line_text_field',
+            'date',
+            'number_integer',
+            'number_decimal',
+            'boolean',
+            'json'
+        ];
+
+        let namespaces = ['no3d_tools', 'polar', 'shopify'];
+
+        // Load GitHub token from environment/URL/localStorage
+        function getGitHubToken() {
+            // 1. Check URL parameter (e.g., ?token=ghp_xxx or #token=ghp_xxx)
+            const urlParams = new URLSearchParams(window.location.search);
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const urlToken = urlParams.get('token') || hashParams.get('token');
+            if (urlToken) {
+                return urlToken;
+            }
+            
+            // 2. Check localStorage for token
+            const storedToken = localStorage.getItem('github_token');
+            if (storedToken) {
+                return storedToken;
+            }
+            
+            // 3. Check full config
+            const savedConfig = localStorage.getItem('repoConfig');
+            if (savedConfig) {
+                const config = JSON.parse(savedConfig);
+                if (config.token) {
+                    return config.token;
+                }
+            }
+            
+            return null;
+        }
+
+        // Load saved config from localStorage
+        const savedConfig = localStorage.getItem('repoConfig');
+        if (savedConfig) {
+            const saved = JSON.parse(savedConfig);
+            // Only override if server hasn't injected values
+            if (!repoConfig.token || repoConfig.token === '') {
+                repoConfig = { ...repoConfig, ...saved };
+            } else {
+                // Keep server-injected values, but merge other settings
+                repoConfig = { ...repoConfig, ...saved, token: repoConfig.token };
+            }
+        }
+        
+        // Override token from environment/URL if available (but don't override server-injected token)
+        if (!repoConfig.token || repoConfig.token === '') {
+            const envToken = getGitHubToken();
+            if (envToken) {
+                repoConfig.token = envToken;
+            }
+        }
+
+        // ============================================================================
+        // Library Management Functions
+        // ============================================================================
+
+        /**
+         * Load library configuration from Electron or fallback to default
+         */
+        async function loadLibraryConfig() {
+            try {
+                if (window.electron && window.electron.getLibraryConfig) {
+                    // Load from Electron's LibraryManager
+                    librariesConfig = await window.electron.getLibraryConfig();
+                    console.log('📚 Loaded library config from Electron:', librariesConfig);
+
+                    // Set active library
+                    const activeLib = librariesConfig.libraries.find(l => l.id === librariesConfig.activeLibrary);
+                    if (activeLib) {
+                        setActiveLibrary(activeLib);
+                    }
+
+                    // Render library tabs
+                    renderLibraryTabs();
+                } else {
+                    // Browser mode - use single library default
+                    console.log('ℹ️  Browser mode - using default single library');
+                    librariesConfig = {
+                        libraries: [{
+                            id: 'no3d-tools',
+                            displayName: 'NO3D Tools',
+                            enabled: true,
+                            type: 'product-catalog',
+                            productTypes: ['Blender Add-on', 'Geometry Node', 'Material'],
+                            namespace: 'no3d_tools',
+                            folderPrefix: 'Dojo',
+                            ui: { tabIcon: '🛠️' }
+                        }],
+                        activeLibrary: 'no3d-tools'
+                    };
+                    setActiveLibrary(librariesConfig.libraries[0]);
+                }
+            } catch (error) {
+                console.error('❌ Failed to load library config:', error);
+                showMessage('Failed to load library configuration', 'error');
+            }
+        }
+
+        /**
+         * Set active library and update UI
+         */
+        function setActiveLibrary(library) {
+            activeLibrary = library;
+
+            // Update dynamic configuration
+            productTypes = library.productTypes || [];
+            metafieldKeys = library.metafieldKeys || [];
+            requiredFields = library.requiredFields || ['title'];
+            namespaces = [library.namespace, 'polar', 'shopify'];
+
+            // Update legacy repoConfig for compatibility
+            if (librariesConfig) {
+                const libConfig = librariesConfig.libraries.find(l => l.id === library.id);
+                if (libConfig) {
+                    repoConfig.repo = `${library.id}-library`;
+                }
+            }
+
+            console.log(`📂 Active library: ${library.displayName}`);
+            console.log(`   Product types: ${productTypes.join(', ')}`);
+            console.log(`   Namespace: ${library.namespace}`);
+            console.log(`   Folder prefix: ${library.folderPrefix}`);
+
+            // Filter products for active library
+            filterProductsByLibrary();
+
+            // Update tab active state
+            updateLibraryTabsUI();
+        }
+
+        /**
+         * Render library tabs in the UI
+         */
+        function renderLibraryTabs() {
+            const tabsContainer = document.getElementById('libraryTabs');
+            if (!tabsContainer || !librariesConfig) return;
+
+            tabsContainer.innerHTML = '';
+
+            librariesConfig.libraries.forEach(library => {
+                const tab = document.createElement('button');
+                tab.className = 'library-tab';
+                if (!library.enabled) {
+                    tab.className += ' disabled';
+                }
+                if (library.id === activeLibrary.id) {
+                    tab.className += ' active';
+                }
+
+                tab.innerHTML = `
+                    <span class="library-tab-icon">${library.ui?.tabIcon || '📁'}</span>
+                    <span>${library.displayName}</span>
+                `;
+
+                tab.addEventListener('click', () => {
+                    if (library.enabled) {
+                        setActiveLibrary(library);
+                    }
+                });
+
+                tabsContainer.appendChild(tab);
+            });
+        }
+
+        /**
+         * Update library tabs UI (active state)
+         */
+        function updateLibraryTabsUI() {
+            const tabs = document.querySelectorAll('.library-tab');
+            tabs.forEach((tab, index) => {
+                const library = librariesConfig.libraries[index];
+                if (library && library.id === activeLibrary.id) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+        }
+
+        /**
+         * Filter products by active library
+         */
+        function filterProductsByLibrary() {
+            if (!activeLibrary) {
+                products = allProducts;
+                return;
+            }
+
+            // Filter products that match the active library's folder prefix
+            products = allProducts.filter(product => {
+                if (product.libraryId) {
+                    return product.libraryId === activeLibrary.id;
+                }
+                // Fallback: check folder name against prefix
+                return product.folderName && product.folderName.startsWith(activeLibrary.folderPrefix);
+            });
+
+            console.log(`🔍 Filtered ${products.length} products for ${activeLibrary.displayName}`);
+
+            // Re-render products
+            renderProducts();
+            updateProductCount();
+        }
+
+        // Initialize on load
+        loadLibraryConfig();
+
+        document.getElementById('configBtn').addEventListener('click', openConfigModal);
+        document.getElementById('loadBtn').addEventListener('click', loadProducts);
+        document.getElementById('saveBtn').addEventListener('click', exportChanges);
+        document.getElementById('pushAllBtn').addEventListener('click', pushAllChangesToGitHub);
+        document.getElementById('searchBox').addEventListener('input', filterProducts);
+        document.getElementById('statusFilter').addEventListener('change', filterProducts);
+        document.getElementById('sortSelect').addEventListener('change', sortProducts);
+        document.getElementById('imageModal').addEventListener('click', (e) => {
+            if (e.target.id === 'imageModal') {
+                document.getElementById('imageModal').classList.remove('open');
+            }
+        });
+
+        function openConfigModal() {
+            document.getElementById('repoOwner').value = repoConfig.owner;
+            document.getElementById('repoName').value = repoConfig.repo;
+            document.getElementById('repoBranch').value = repoConfig.branch;
+            // Show token from config, but don't overwrite if it's from URL/env
+            const displayToken = repoConfig.token || '';
+            document.getElementById('githubToken').value = displayToken;
+            document.getElementById('configModal').classList.add('open');
+        }
+
+        function closeConfigModal() {
+            document.getElementById('configModal').classList.remove('open');
+        }
+
+        function saveConfig() {
+            repoConfig.owner = document.getElementById('repoOwner').value.trim();
+            repoConfig.repo = document.getElementById('repoName').value.trim();
+            repoConfig.branch = document.getElementById('repoBranch').value.trim();
+            const token = document.getElementById('githubToken').value.trim();
+            
+            // Save token to both repoConfig and separate localStorage key
+            if (token) {
+                repoConfig.token = token;
+                localStorage.setItem('github_token', token);
+            } else {
+                // If empty, check if token exists from URL/env
+                const envToken = getGitHubToken();
+                if (envToken) {
+                    repoConfig.token = envToken;
+                } else {
+                    repoConfig.token = null;
+                    localStorage.removeItem('github_token');
+                }
+            }
+            
+            localStorage.setItem('repoConfig', JSON.stringify(repoConfig));
+            closeConfigModal();
+            
+            document.getElementById('loadBtn').disabled = false;
+            loadProducts();
+        }
+
+        async function fetchGitHubAPI(endpoint, options = {}) {
+            const url = `https://api.github.com${endpoint}`;
+            const headers = {
+                'Accept': 'application/vnd.github.v3+json',
+                ...(options.headers || {})
+            };
+            
+            // Debug: Log token status
+            if (!repoConfig.token) {
+                console.warn('⚠️ No GitHub token found in repoConfig');
+                console.warn('   Check: 1) .env file has GITHUB_TOKEN, 2) Server restarted, 3) Browser cache cleared');
+            } else {
+                const tokenType = repoConfig.token.startsWith('ghp_') ? 'PAT' : 
+                                 repoConfig.token.startsWith('gho_') ? 'OAuth' : 'Unknown';
+                console.log(`✅ Using GitHub token (${tokenType}):`, repoConfig.token.substring(0, 15) + '...');
+                console.log('   Token length:', repoConfig.token.length, 'chars');
+            }
+            
+            if (repoConfig.token) {
+                // GitHub API accepts both 'token' and 'Bearer' for PATs and OAuth tokens
+                // OAuth tokens (gho_) work with 'token' prefix
+                // Personal Access Tokens (ghp_) also work with 'token' prefix
+                const authHeader = `token ${repoConfig.token.trim()}`;
+                headers['Authorization'] = authHeader;
+            }
+            
+            // Add Content-Type for PUT/POST requests
+            if (options.method && (options.method === 'PUT' || options.method === 'POST')) {
+                headers['Content-Type'] = 'application/json';
+            }
+            
+            const fetchOptions = {
+                method: options.method || 'GET',
+                headers: headers
+            };
+            
+            if (options.body) {
+                fetchOptions.body = options.body;
+            }
+            
+            const response = await fetch(url, fetchOptions);
+            
+            // Enhanced error handling
+            if (!response.ok) {
+                const errorText = await response.text().catch(() => '');
+                let errorData = null;
+                try {
+                    errorData = JSON.parse(errorText);
+                } catch (e) {
+                    // Not JSON
+                }
+                
+                if (response.status === 404) {
+                    return null;
+                }
+                if (response.status === 401) {
+                    const message = errorData?.message || 'Authentication failed';
+                    throw new Error(`401 Unauthorized: ${message}. Check your GitHub token. For private repos, you need a Personal Access Token with "repo" scope.`);
+                }
+                if (response.status === 403) {
+                    const rateLimit = response.headers.get('X-RateLimit-Remaining');
+                    const message = errorData?.message || 'Access forbidden';
+                    throw new Error(`403 Forbidden: ${message}. Rate limit remaining: ${rateLimit || 'unknown'}. ${repoConfig.token ? 'Token may not have correct permissions or repo access.' : 'Token required for private repos.'}`);
+                }
+                throw new Error(`GitHub API error: ${response.status} ${response.statusText}. ${errorData?.message || ''}`);
+            }
+            return await response.json();
+        }
+
+        async function fetchGitHubRaw(path) {
+            // For private repos, use GitHub API instead of raw.githubusercontent.com
+            // Raw URLs don't support authentication for private repos
+            if (repoConfig.token) {
+                // Use GitHub API to get file content (supports private repos)
+                try {
+                    const apiPath = `/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${path}?ref=${repoConfig.branch}`;
+                    const fileData = await fetchGitHubAPI(apiPath);
+                    if (fileData && fileData.content) {
+                        // Decode base64 content
+                        return atob(fileData.content.replace(/\s/g, ''));
+                    }
+                    return null;
+                } catch (error) {
+                    console.warn(`Failed to fetch ${path} via API, trying raw URL:`, error.message);
+                    // Fallback to raw URL (won't work for private repos)
+                }
+            }
+            
+            // Fallback: Use raw URL (only works for public repos)
+            const url = `https://raw.githubusercontent.com/${repoConfig.owner}/${repoConfig.repo}/${repoConfig.branch}/${path}`;
+            const headers = {};
+            if (repoConfig.token) {
+                headers['Authorization'] = `token ${repoConfig.token}`;
+            }
+            
+            const response = await fetch(url, { headers });
+            if (!response.ok) {
+                if (response.status === 404) {
+                    return null;
+                }
+                throw new Error(`Failed to fetch ${path}: ${response.status}`);
+            }
+            return await response.text();
+        }
+
+        async function loadProducts() {
+            products = [];
+            dirtyProducts.clear();
+            
+            try {
+                document.getElementById('loadBtn').disabled = true;
+                document.getElementById('loadBtn').textContent = 'Loading...';
+                
+                // Debug: Log current config
+                console.log('🔍 Loading products with config:', {
+                    owner: repoConfig.owner,
+                    repo: repoConfig.repo,
+                    branch: repoConfig.branch,
+                    hasToken: !!repoConfig.token,
+                    tokenType: repoConfig.token ? repoConfig.token.substring(0, 4) : 'none',
+                    tokenPrefix: repoConfig.token ? repoConfig.token.substring(0, 15) + '...' : 'none',
+                    tokenLength: repoConfig.token ? repoConfig.token.length : 0
+                });
+                
+                // Validate token before making request
+                if (!repoConfig.token) {
+                    throw new Error('No GitHub token found. Please configure token in .env file or via config modal.');
+                }
+                
+                if (repoConfig.token.length < 20) {
+                    throw new Error(`Invalid token length: ${repoConfig.token.length}. Token should be 40+ characters.`);
+                }
+                
+                // Fetch root directory contents
+                const rootContents = await fetchGitHubAPI(`/repos/${repoConfig.owner}/${repoConfig.repo}/contents`);
+                if (!rootContents) {
+                    throw new Error('Repository not found or inaccessible');
+                }
+
+                // Filter directories based on active library's folder prefix
+                const folderPrefix = activeLibrary ? activeLibrary.folderPrefix : 'Dojo';
+                const productDirs = rootContents.filter(item =>
+                    item.type === 'dir' && item.name.startsWith(folderPrefix)
+                );
+
+                console.log(`📁 Found ${productDirs.length} ${activeLibrary?.displayName || 'product'} directories`);
+
+                // Load each product and tag with library ID
+                for (const dir of productDirs) {
+                    const product = await loadProductFromGitHub(dir.name);
+                    if (product) {
+                        product.libraryId = activeLibrary ? activeLibrary.id : 'no3d-tools';
+                        allProducts.push(product);
+                        products.push(product);
+                    }
+                }
+
+                updateProductCount();
+                renderProducts();
+                document.getElementById('controls').style.display = 'flex';
+                document.getElementById('loadBtn').disabled = false;
+                document.getElementById('loadBtn').textContent = 'Load Products';
+                showMessage(`Loaded ${products.length} products`, 'success');
+            } catch (error) {
+                showMessage('Error loading products: ' + error.message, 'error');
+                document.getElementById('loadBtn').disabled = false;
+                document.getElementById('loadBtn').textContent = 'Load Products';
+            }
+        }
+
+        async function loadProductFromGitHub(dirName) {
+            try {
+                // Get directory contents
+                const dirContents = await fetchGitHubAPI(`/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${dirName}`);
+                if (!dirContents) return null;
+
+                let jsonFileName = null;
+                let jsonPath = null;
+                let iconPath = null;
+                let iconFileName = null;
+                let iconUrl = null;
+                let hasBlend = false;
+                const mediaFiles = []; // Track all media files
+
+                // Find files
+                for (const item of dirContents) {
+                    if (item.type === 'file') {
+                        if (item.name.endsWith('.json')) {
+                            jsonFileName = item.name;
+                            jsonPath = `${dirName}/${item.name}`;
+                        } else if (item.name.startsWith('icon_') && item.name.endsWith('.png')) {
+                            iconPath = `${dirName}/${item.name}`;
+                            iconFileName = item.name; // Store the actual filename
+                            // For private repos, load image via API and convert to data URL
+                            iconUrl = await loadImageAsDataUrl(iconPath);
+                            mediaFiles.push({ name: item.name, type: 'icon', size: item.size });
+                        } else if (item.name.endsWith('.blend')) {
+                            hasBlend = true;
+                            mediaFiles.push({ name: item.name, type: 'blend', size: item.size });
+                        } else {
+                            // Other media files (images, etc.)
+                            const ext = item.name.split('.').pop().toLowerCase();
+                            const imageExts = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
+                            if (imageExts.includes(ext)) {
+                                mediaFiles.push({ name: item.name, type: 'image', size: item.size });
+                            } else {
+                                mediaFiles.push({ name: item.name, type: 'other', size: item.size });
+                            }
+                        }
+                    }
+                }
+
+                if (!jsonPath) return null;
+
+                // Fetch JSON file
+                const jsonText = await fetchGitHubRaw(jsonPath);
+                if (!jsonText) return null;
+
+                const productData = JSON.parse(jsonText);
+                
+                // Normalize changelog entries: convert string 'changes' to array format
+                if (productData.changelog && Array.isArray(productData.changelog)) {
+                    productData.changelog = productData.changelog.map(entry => {
+                        if (entry && typeof entry.changes === 'string') {
+                            // Convert string to array format
+                            return {
+                                ...entry,
+                                changes: [entry.changes]
+                            };
+                        }
+                        // Ensure changes is always an array
+                        if (entry && !Array.isArray(entry.changes)) {
+                            return {
+                                ...entry,
+                                changes: []
+                            };
+                        }
+                        return entry;
+                    });
+                }
+
+                return {
+                    dirName,
+                    folderName: dirName, // Alias for consistency
+                    jsonPath,
+                    jsonFileName,
+                    iconPath,
+                    iconFileName, // Store the actual icon filename
+                    iconUrl,
+                    hasBlend,
+                    mediaFiles, // Store all media files
+                    data: productData,
+                    originalData: JSON.parse(JSON.stringify(productData))
+                };
+            } catch (error) {
+                console.error('Error loading product from', dirName, error);
+                return null;
+            }
+        }
+
+        async function loadImageAsDataUrl(imagePath) {
+            try {
+                // For private repos, use GitHub API to get image
+                if (repoConfig.token) {
+                    const apiPath = `/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${imagePath}?ref=${repoConfig.branch}`;
+                    const fileData = await fetchGitHubAPI(apiPath);
+                    if (fileData && fileData.content && fileData.encoding === 'base64') {
+                        // Convert base64 to data URL
+                        const base64Content = fileData.content.replace(/\s/g, '');
+                        // Determine MIME type from file extension
+                        const mimeType = imagePath.endsWith('.png') ? 'image/png' : 
+                                       imagePath.endsWith('.jpg') || imagePath.endsWith('.jpeg') ? 'image/jpeg' :
+                                       imagePath.endsWith('.gif') ? 'image/gif' : 'image/png';
+                        return `data:${mimeType};base64,${base64Content}`;
+                    }
+                }
+                
+                // Fallback: Try raw URL (only works for public repos)
+                const rawUrl = `https://raw.githubusercontent.com/${repoConfig.owner}/${repoConfig.repo}/${repoConfig.branch}/${imagePath}`;
+                const headers = {};
+                if (repoConfig.token) {
+                    headers['Authorization'] = `token ${repoConfig.token}`;
+                }
+                
+                const response = await fetch(rawUrl, { headers });
+                if (response.ok) {
+                    const blob = await response.blob();
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.readAsDataURL(blob);
+                    });
+                }
+                
+                return null;
+            } catch (error) {
+                console.warn('Failed to load image:', imagePath, error);
+                return null;
+            }
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = '';
+
+            if (products.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><h2>No Products Found</h2></div>';
+                return;
+            }
+
+            products.forEach((product, index) => {
+                const card = createProductCard(product, index);
+                grid.appendChild(card);
+            });
+        }
+
+        function createProductCard(product, index) {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            if (dirtyProducts.has(index)) {
+                card.classList.add('dirty');
+            }
+
+            const hasIcon = product.iconUrl !== null;
+            const hasBlend = product.hasBlend || false;
+            const hasJson = product.jsonPath !== null;
+
+            card.innerHTML = `
+                <div class="product-header">
+                    <div class="icon-upload-zone" id="icon-zone-${index}"
+                         onclick="document.getElementById('icon-input-${index}').click()"
+                         ondragover="handleIconDragOver(event, ${index})"
+                         ondragleave="handleIconDragLeave(event, ${index})"
+                         ondrop="handleIconDrop(event, ${index})">
+                        ${hasIcon ? `
+                            <img src="${product.iconUrl}" alt="Product icon">
+                            <div class="icon-upload-overlay">
+                                <div>📁 Upload</div>
+                                <div style="font-size: 0.6rem;">or drag & drop</div>
+                            </div>
+                        ` : `
+                            <div style="text-align: center; color: #999; font-size: 0.7rem;">
+                                <div>📁</div>
+                                <div>Upload Icon</div>
+                            </div>
+                        `}
+                    </div>
+                    <input type="file" id="icon-input-${index}" accept="image/*" style="display: none;"
+                           onchange="handleIconFileSelect(event, ${index})">
+                    <div class="product-info">
+                        <input type="text" class="product-title-input" value="${escapeHtml(product.data.title)}" 
+                               onchange="updateProduct(${index}, 'title', this.value)">
+                        <div class="file-status">
+                            <span class="file-badge ${hasJson ? 'exists' : 'missing'}">JSON</span>
+                            <span class="file-badge ${hasBlend ? 'exists' : 'missing'}">BLEND</span>
+                            <span class="file-badge ${hasIcon ? 'exists' : 'missing'}">ICON</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Price</label>
+                    <input type="text" class="form-input" value="${product.data.variants && product.data.variants[0] ? escapeHtml(product.data.variants[0].price) : '0.00'}" 
+                           onchange="updateProductPrice(${index}, this.value)" 
+                           pattern="^\\d+\\.\\d{2}$">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" onchange="updateProduct(${index}, 'description', this.value)">${escapeHtml(product.data.description)}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" onchange="updateProduct(${index}, 'status', this.value)">
+                        <option value="active" ${product.data.status === 'active' ? 'selected' : ''}>Active</option>
+                        <option value="draft" ${product.data.status === 'draft' ? 'selected' : ''}>Draft</option>
+                        <option value="archived" ${product.data.status === 'archived' ? 'selected' : ''}>Archived</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Product Type</label>
+                    <select class="form-select" onchange="updateProduct(${index}, 'product_type', this.value)">
+                        ${productTypes.map(type => 
+                            `<option value="${type}" ${product.data.product_type === type ? 'selected' : ''}>${type}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Tags (comma-separated)</label>
+                    <input type="text" class="tags-input" value="${product.data.tags.join(', ')}" 
+                           onchange="updateProductTags(${index}, this.value)">
+                    <div class="tags-display">
+                        ${product.data.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Download File</label>
+                    <div class="download-filename">
+                        ${(() => {
+                            const blendFile = product.data.metafields?.find(m => m.key === 'blend_file')?.value;
+                            return blendFile ? escapeHtml(blendFile) : 'No download file specified';
+                        })()}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Media Files</label>
+                    <div class="file-list-section">
+                        <div class="media-upload-zone" id="media-zone-${index}"
+                             onclick="document.getElementById('media-input-${index}').click()"
+                             ondragover="handleMediaDragOver(event, ${index})"
+                             ondragleave="handleMediaDragLeave(event, ${index})"
+                             ondrop="handleMediaDrop(event, ${index})">
+                            <div class="upload-icon">📁</div>
+                            <div class="upload-text">Drag & drop files here or click to upload</div>
+                            <div style="font-size: 0.7rem; color: #999; margin-top: 0.25rem;">
+                                Supports: All file types (images, .blend, etc.)
+                            </div>
+                        </div>
+                        <input type="file" id="media-input-${index}" 
+                               accept="*/*" 
+                               multiple 
+                               style="display: none;"
+                               onchange="handleMediaFileSelect(event, ${index})">
+                        ${product.mediaFiles && product.mediaFiles.length > 0 ? `
+                            <ul class="media-files-list">
+                                ${product.mediaFiles.map((file, fileIndex) => `
+                                    <li>
+                                        <input type="text" 
+                                               class="file-name-input" 
+                                               value="${escapeHtml(file.name)}" 
+                                               data-original-name="${escapeHtml(file.name)}"
+                                               data-file-index="${fileIndex}"
+                                               data-product-index="${index}"
+                                               onblur="handleMediaFileNameChange(event, ${index}, ${fileIndex})"
+                                               onkeypress="if(event.key==='Enter') event.target.blur()"
+                                               style="flex: 1; font-family: 'Courier New', monospace; font-size: 0.85rem; padding: 0.25rem; border: 1px solid #ddd; border-radius: 3px; background: white;">
+                                        <span class="file-type">${file.type}</span>
+                                        ${file.size ? `<span class="file-size">${formatFileSize(file.size)}</span>` : ''}
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        ` : `
+                            <div style="color: #999; font-size: 0.85rem; padding: 0.5rem; text-align: center;">
+                                No media files found
+                            </div>
+                        `}
+                    </div>
+                </div>
+
+                <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+                    <label class="form-label" style="margin-bottom: 0;">Changelog</label>
+                    <button class="btn btn-success btn-small" onclick="pushProductToGitHub(${index})" 
+                            ${dirtyProducts.has(index) ? '' : 'disabled'} 
+                            style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">
+                        ${dirtyProducts.has(index) ? '📤 Push' : '✓ Synced'}
+                    </button>
+                </div>
+                <div class="changelog-container">
+                        ${(product.data.changelog && product.data.changelog.length > 0) 
+                            ? product.data.changelog.map((entry, entryIndex) => `
+                                <div class="changelog-entry">
+                                    <div class="changelog-entry-header">
+                                        <input type="text" class="form-input" 
+                                               value="${escapeHtml(entry.version || '')}" 
+                                               style="max-width: 120px;"
+                                               onchange="updateChangelogEntry(${index}, ${entryIndex}, 'version', this.value)">
+                                        <input type="date" class="form-input" 
+                                               value="${escapeHtml(entry.date || '')}" 
+                                               style="max-width: 150px;"
+                                               onchange="updateChangelogEntry(${index}, ${entryIndex}, 'date', this.value)">
+                                        <button class="btn btn-danger btn-small" onclick="removeChangelogEntry(${index}, ${entryIndex})">Remove</button>
+                                    </div>
+                                    <div class="changelog-changes">
+                                        ${(() => {
+                                            // Normalize changes to always be an array
+                                            // Handle both string (blog posts) and array (products) formats
+                                            const changesArray = Array.isArray(entry.changes) 
+                                                ? entry.changes 
+                                                : (typeof entry.changes === 'string' && entry.changes ? [entry.changes] : []);
+                                            return changesArray.length > 0 
+                                                ? changesArray.map((change, changeIndex) => `
+                                                    <div class="changelog-change-item">
+                                                        <input type="text" class="form-input" 
+                                                               value="${escapeHtml(change)}" 
+                                                               onchange="updateChangelogChange(${index}, ${entryIndex}, ${changeIndex}, this.value)">
+                                                        <button class="btn btn-danger btn-small" onclick="removeChangelogChange(${index}, ${entryIndex}, ${changeIndex})">×</button>
+                                                    </div>
+                                                `).join('')
+                                                : '';
+                                        })()}
+                                        <button class="btn btn-secondary btn-small" onclick="addChangelogChange(${index}, ${entryIndex})" style="margin-top: 0.25rem;">+ Add Change</button>
+                                    </div>
+                                </div>
+                            `).join('')
+                            : '<div style="padding: 1rem; text-align: center; color: #666; font-style: italic;">No changelog entries yet. Changelog entries will be automatically added when products are synced.</div>'
+                        }
+                        <button class="btn btn-secondary btn-small" onclick="addChangelogEntry(${index})" style="margin-top: 0.5rem;">+ Add Changelog Entry</button>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function updateProduct(index, field, value) {
+            products[index].data[field] = value;
+            markDirty(index);
+            validateProduct(index);
+        }
+
+        function updateProductPrice(index, value) {
+            // Ensure variants array exists and has at least one variant
+            if (!products[index].data.variants || products[index].data.variants.length === 0) {
+                products[index].data.variants = [{
+                    price: value,
+                    sku: '',
+                    inventory_policy: 'continue',
+                    inventory_management: 'shopify'
+                }];
+            } else {
+                products[index].data.variants[0].price = value;
+            }
+            markDirty(index);
+            validateProduct(index);
+        }
+
+        function updateProductTags(index, value) {
+            const tags = value.split(',').map(t => t.trim()).filter(t => t);
+            products[index].data.tags = tags;
+            markDirty(index);
+
+            // Update tags display
+            const card = document.querySelectorAll('.product-card')[index];
+            const tagsDisplay = card.querySelector('.tags-display');
+            tagsDisplay.innerHTML = tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('');
+        }
+
+        // Media File Upload Functions
+        function handleMediaDragOver(event, index) {
+            event.preventDefault();
+            event.stopPropagation();
+            const zone = document.getElementById(`media-zone-${index}`);
+            zone.classList.add('drag-over');
+        }
+
+        function handleMediaDragLeave(event, index) {
+            event.preventDefault();
+            event.stopPropagation();
+            const zone = document.getElementById(`media-zone-${index}`);
+            zone.classList.remove('drag-over');
+        }
+
+        async function handleMediaDrop(event, index) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const zone = document.getElementById(`media-zone-${index}`);
+            zone.classList.remove('drag-over');
+
+            const files = Array.from(event.dataTransfer.files);
+            if (files.length > 0) {
+                await uploadMediaFiles(index, files);
+            }
+        }
+
+        async function handleMediaFileSelect(event, index) {
+            const files = Array.from(event.target.files);
+            if (files.length > 0) {
+                await uploadMediaFiles(index, files);
+            }
+            // Reset input so same files can be selected again
+            event.target.value = '';
+        }
+
+        async function uploadMediaFiles(index, files) {
+            const product = products[index];
+            const zone = document.getElementById(`media-zone-${index}`);
+
+            try {
+                // Show loading state
+                zone.classList.add('icon-uploading');
+                zone.innerHTML = '<div class="icon-upload-spinner"></div><div style="margin-top: 0.5rem; font-size: 0.85rem;">Uploading files...</div>';
+
+                let successCount = 0;
+                let errorCount = 0;
+                const errors = [];
+
+                for (const file of files) {
+                    try {
+                        await uploadMediaFile(index, file);
+                        successCount++;
+                    } catch (error) {
+                        errorCount++;
+                        errors.push({ file: file.name, error: error.message });
+                        console.error(`Failed to upload ${file.name}:`, error);
+                    }
+                }
+
+                // Reload product to refresh file list immediately
+                if (successCount > 0) {
+                    await reloadProductFiles(index);
+                    // Re-render to show updated file list
+                    renderProducts();
+                }
+
+                // Show results
+                if (errorCount === 0) {
+                    showMessage(`✅ Successfully uploaded ${successCount} file(s)`, 'success');
+                } else {
+                    showMessage(`⚠️ Uploaded ${successCount} file(s), ${errorCount} failed. Check console for details.`, 'error');
+                    console.error('Upload errors:', errors);
+                }
+
+                // Restore zone if there were errors
+                if (errorCount > 0) {
+                    renderProducts();
+                }
+            } catch (error) {
+                console.error('Media upload failed:', error);
+                showMessage(`Failed to upload files: ${error.message}`, 'error');
+                renderProducts();
+            }
+        }
+
+        async function uploadMediaFile(index, file) {
+            const product = products[index];
+            const fileName = file.name;
+            const filePath = `${product.folderName}/${fileName}`;
+
+            // Read file as base64
+            const reader = new FileReader();
+            const dataUrl = await new Promise((resolve, reject) => {
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+
+            const base64Content = dataUrl.split(',')[1];
+
+            // Save locally if in Electron or server mode
+            if (window.electron && window.electron.isElectron) {
+                try {
+                    // Determine if it's an image or binary file
+                    if (file.type.startsWith('image/')) {
+                        const result = await window.electron.saveIconFile(filePath, base64Content);
+                        if (!result.success) {
+                            throw new Error(result.error);
+                        }
+                    } else {
+                        // For binary files like .blend, we need to save as binary
+                        // Electron's saveIconFile might work, but let's use a more generic approach
+                        const result = await window.electron.saveIconFile(filePath, base64Content);
+                        if (!result.success) {
+                            throw new Error(result.error);
+                        }
+                    }
+                    console.log(`✅ File saved locally (Electron): ${filePath}`);
+                } catch (error) {
+                    console.error('Local save failed:', error);
+                    // Continue with GitHub upload even if local save fails
+                }
+            } else {
+                // Server mode - use API endpoint
+                try {
+                    const response = await fetch('/api/sync-local-icon', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            filePath: filePath,
+                            base64Content: base64Content
+                        })
+                    });
+
+                    if (response.ok) {
+                        console.log(`✅ File saved locally (Server): ${filePath}`);
+                    } else {
+                        console.warn(`Local save failed for ${filePath}, continuing with GitHub upload`);
+                    }
+                } catch (error) {
+                    console.warn('Local save failed:', error);
+                    // Continue with GitHub upload
+                }
+            }
+
+            // Upload to GitHub if token is available
+            if (repoConfig.token) {
+                try {
+                    // Get current file SHA if it exists (needed for updates)
+                    let sha = null;
+                    try {
+                        sha = await getFileSHA(filePath);
+                        if (sha) {
+                            console.log(`📋 Found existing file, SHA: ${sha.substring(0, 7)}...`);
+                        }
+                    } catch (e) {
+                        console.log(`📋 File does not exist yet, will create new`);
+                    }
+
+                    // Upload to GitHub
+                    const uploadBody = {
+                        message: `Add media file: ${fileName} for ${product.data.title}`,
+                        content: base64Content,
+                        branch: repoConfig.branch
+                    };
+
+                    if (sha) {
+                        uploadBody.sha = sha;
+                        uploadBody.message = `Update media file: ${fileName} for ${product.data.title}`;
+                    }
+
+                    const apiUrl = `https://api.github.com/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${filePath}`;
+                    const response = await fetch(apiUrl, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${repoConfig.token}`,
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(uploadBody)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        const errorMessage = errorData.message || 'Failed to upload file to GitHub';
+                        throw new Error(errorMessage);
+                    }
+
+                    console.log(`✅ File uploaded to GitHub: ${filePath}`);
+                } catch (error) {
+                    console.error('GitHub upload failed:', error);
+                    throw error;
+                }
+            }
+        }
+
+        async function reloadProductFiles(index) {
+            // Reload the product directory to get updated file list
+            const product = products[index];
+            try {
+                const dirContents = await fetchGitHubAPI(`/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${product.folderName}`);
+                if (dirContents) {
+                    const mediaFiles = [];
+                    for (const item of dirContents) {
+                        if (item.type === 'file' && !item.name.endsWith('.json')) {
+                            const ext = item.name.split('.').pop().toLowerCase();
+                            let type = 'other';
+                            if (item.name.startsWith('icon_') && item.name.endsWith('.png')) {
+                                type = 'icon';
+                            } else if (item.name.endsWith('.blend')) {
+                                type = 'blend';
+                            } else if (['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext)) {
+                                type = 'image';
+                            }
+                            mediaFiles.push({ name: item.name, type: type, size: item.size });
+                        }
+                    }
+                    products[index].mediaFiles = mediaFiles;
+                    console.log(`✅ Reloaded ${mediaFiles.length} media files for ${product.data.title}`);
+                }
+            } catch (error) {
+                console.error('Failed to reload product files:', error);
+            }
+        }
+
+        async function handleMediaFileNameChange(event, productIndex, fileIndex) {
+            const input = event.target;
+            const newName = input.value.trim();
+            const originalName = input.dataset.originalName;
+            const product = products[productIndex];
+
+            if (!newName || newName === originalName) {
+                // No change or empty name - revert
+                input.value = originalName;
+                input.classList.remove('changed');
+                return;
+            }
+
+            // Validate filename
+            if (newName.includes('/') || newName.includes('\\')) {
+                showMessage('Invalid filename: cannot contain slashes', 'error');
+                input.value = originalName;
+                input.classList.remove('changed');
+                return;
+            }
+
+            try {
+                input.disabled = true;
+                input.classList.add('changed');
+
+                // Rename file on GitHub
+                await renameMediaFile(productIndex, originalName, newName);
+
+                // Update local file list immediately
+                const file = product.mediaFiles[fileIndex];
+                if (file) {
+                    file.name = newName;
+                    input.dataset.originalName = newName;
+                    input.classList.remove('changed');
+                }
+
+                // Reload from GitHub to ensure sync
+                await reloadProductFiles(productIndex);
+                renderProducts();
+
+                showMessage(`✅ Renamed ${originalName} to ${newName}`, 'success');
+            } catch (error) {
+                console.error('Rename failed:', error);
+                showMessage(`Failed to rename file: ${error.message}`, 'error');
+                input.value = originalName;
+                input.classList.remove('changed');
+            } finally {
+                input.disabled = false;
+            }
+        }
+
+        async function renameMediaFile(productIndex, oldName, newName) {
+            const product = products[productIndex];
+            const oldPath = `${product.folderName}/${oldName}`;
+            const newPath = `${product.folderName}/${newName}`;
+
+            if (!repoConfig.token) {
+                throw new Error('GitHub token required');
+            }
+
+            // Step 1: Get the file content from GitHub
+            const fileData = await fetchGitHubAPI(`/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${oldPath}?ref=${repoConfig.branch}`);
+            if (!fileData) {
+                throw new Error(`File not found: ${oldName}`);
+            }
+
+            const content = fileData.content;
+            const encoding = fileData.encoding; // Should be 'base64'
+
+            // Step 2: Create new file with new name
+            const createResponse = await fetchGitHubAPI(`/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${newPath}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    message: `Rename ${oldName} to ${newName} for ${product.data.title}`,
+                    content: content,
+                    branch: repoConfig.branch
+                })
+            });
+
+            if (!createResponse || !createResponse.content) {
+                throw new Error('Failed to create new file');
+            }
+
+            // Step 3: Delete old file
+            const deleteResponse = await fetchGitHubAPI(`/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${oldPath}`, {
+                method: 'DELETE',
+                body: JSON.stringify({
+                    message: `Delete ${oldName} (renamed to ${newName})`,
+                    sha: fileData.sha,
+                    branch: repoConfig.branch
+                })
+            });
+
+            // Step 4: Sync local files
+            // Create new file and delete old file locally
+            if (window.electron && window.electron.isElectron) {
+                try {
+                    // Save new file
+                    await window.electron.saveIconFile(newPath, content);
+                    // Delete old file (if Electron supports it)
+                    // Note: We'll try to delete, but if not supported, old file will remain
+                    console.log(`✅ Local file renamed: ${oldPath} → ${newPath}`);
+                } catch (error) {
+                    console.warn('Local file rename failed:', error);
+                }
+            } else {
+                // Server mode - create new file and delete old file
+                try {
+                    // Create new file
+                    const createResponse = await fetch('/api/sync-local-icon', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            filePath: newPath,
+                            base64Content: content
+                        })
+                    });
+                    
+                    if (createResponse.ok) {
+                        console.log(`✅ Local file created: ${newPath}`);
+                        
+                        // Delete old file
+                        const deleteResponse = await fetch('/api/delete-local-file', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                filePath: oldPath
+                            })
+                        });
+                        
+                        if (deleteResponse.ok) {
+                            console.log(`✅ Local file deleted: ${oldPath}`);
+                        } else {
+                            console.warn(`⚠️  Failed to delete old local file: ${oldPath}`);
+                        }
+                    }
+                } catch (error) {
+                    console.warn('Local file rename failed:', error);
+                }
+            }
+
+            console.log(`✅ File renamed on GitHub: ${oldName} → ${newName}`);
+        }
+
+        // Icon Upload Functions
+        function handleIconDragOver(event, index) {
+            event.preventDefault();
+            event.stopPropagation();
+            const zone = document.getElementById(`icon-zone-${index}`);
+            zone.classList.add('drag-over');
+        }
+
+        function handleIconDragLeave(event, index) {
+            event.preventDefault();
+            event.stopPropagation();
+            const zone = document.getElementById(`icon-zone-${index}`);
+            zone.classList.remove('drag-over');
+        }
+
+        async function handleIconDrop(event, index) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const zone = document.getElementById(`icon-zone-${index}`);
+            zone.classList.remove('drag-over');
+
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type.startsWith('image/')) {
+                    await uploadProductIcon(index, file);
+                } else {
+                    showMessage('Please drop an image file', 'error');
+                }
+            }
+        }
+
+        async function handleIconFileSelect(event, index) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type.startsWith('image/')) {
+                    await uploadProductIcon(index, file);
+                } else {
+                    showMessage('Please select an image file', 'error');
+                }
+            }
+            // Reset input so same file can be selected again
+            event.target.value = '';
+        }
+
+        async function uploadProductIcon(index, file) {
+            const product = products[index];
+            const zone = document.getElementById(`icon-zone-${index}`);
+
+            try {
+                // Show loading state
+                zone.classList.add('icon-uploading');
+                zone.innerHTML = '<div class="icon-upload-spinner"></div>';
+
+                // Read file as data URL for preview
+                const reader = new FileReader();
+                const dataUrl = await new Promise((resolve, reject) => {
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+
+                // Determine icon filename - use existing filename if available, otherwise check metafield, otherwise generate new
+                let iconFileName = product.iconFileName; // Use existing icon filename if product already has one
+                
+                if (!iconFileName) {
+                    // Check metafield for thumbnail filename
+                    iconFileName = product.data.metafields?.find(m => m.key === 'thumbnail')?.value;
+                }
+                
+                if (!iconFileName) {
+                    // Generate new filename based on product title
+                    iconFileName = `icon_${product.data.title}.png`;
+                }
+                
+                // Ensure we're using the exact filename (no path)
+                if (iconFileName.includes('/')) {
+                    iconFileName = iconFileName.split('/').pop();
+                }
+                
+                console.log(`📸 Using icon filename: ${iconFileName} (overwriting existing if present)`);
+
+                // Get base64 content (remove data URL prefix)
+                const base64Content = dataUrl.split(',')[1];
+
+                // Save icon locally (works in both Electron and Server modes)
+                let localSaveSuccess = false;
+
+                if (window.electron && window.electron.isElectron) {
+                    // Electron mode - use IPC
+                    try {
+                        const iconPath = `${product.folderName}/${iconFileName}`;
+                        const result = await window.electron.saveIconFile(iconPath, base64Content);
+
+                        if (result.success) {
+                            console.log(`✅ Icon saved locally (Electron): ${iconPath}`);
+                            showMessage(`Icon saved locally for ${product.data.title}`, 'success');
+                            localSaveSuccess = true;
+                        } else {
+                            throw new Error(result.error);
+                        }
+                    } catch (error) {
+                        console.error('Local icon save failed (Electron):', error);
+                        showMessage(`Local save failed: ${error.message}`, 'error');
+                    }
+                } else {
+                    // Server mode - use API endpoint
+                    try {
+                        const iconPath = `${product.folderName}/${iconFileName}`;
+                        console.log(`💾 Saving icon via server API: ${iconPath}`);
+
+                        const response = await fetch('/api/sync-local-icon', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                filePath: iconPath,
+                                base64Content: base64Content
+                            })
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+                        }
+
+                        const result = await response.json();
+                        if (result.success) {
+                            console.log(`✅ Icon saved locally (Server): ${iconPath} (${result.size} bytes)`);
+                            showMessage(`Icon saved locally for ${product.data.title}`, 'success');
+                            localSaveSuccess = true;
+                        } else {
+                            throw new Error(result.error || 'Unknown error');
+                        }
+                    } catch (error) {
+                        console.error('Local icon save failed (Server):', error);
+                        showMessage(`Local save failed: ${error.message}`, 'error');
+                    }
+                }
+
+                // Also upload to GitHub if token is available
+                if (repoConfig.token) {
+                    const iconPath = `${product.folderName}/${iconFileName}`;
+
+                    try {
+                        // Get current file SHA if it exists (needed for updates)
+                        // GitHub requires SHA when updating existing files
+                        let sha = null;
+                        try {
+                            sha = await getFileSHA(iconPath);
+                            if (sha) {
+                                console.log(`📋 Found existing icon file, SHA: ${sha.substring(0, 7)}...`);
+                            } else {
+                                console.log(`📋 Icon file does not exist yet, will create new`);
+                            }
+                        } catch (e) {
+                            // File doesn't exist yet, that's okay - we'll create it
+                            console.log(`📋 Icon file does not exist yet (${e.message}), will create new`);
+                            sha = null;
+                        }
+
+                        // Upload to GitHub
+                        const uploadBody = {
+                            message: `Update icon for ${product.data.title}`,
+                            content: base64Content,
+                            branch: repoConfig.branch
+                        };
+                        
+                        // GitHub API requires SHA when updating existing files
+                        if (sha) {
+                            uploadBody.sha = sha;
+                            console.log(`📤 Updating existing icon file with SHA: ${sha.substring(0, 7)}...`);
+                        } else {
+                            console.log(`📤 Creating new icon file`);
+                        }
+
+                        const apiUrl = `https://api.github.com/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${iconPath}`;
+                        const response = await fetch(apiUrl, {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `token ${repoConfig.token}`,
+                                'Accept': 'application/vnd.github.v3+json',
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(uploadBody)
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            const errorMessage = errorData.message || 'Failed to upload icon to GitHub';
+                            console.error('GitHub API error:', errorData);
+                            
+                            // More helpful error message
+                            if (errorMessage.includes('sha') || errorMessage.includes('SHA')) {
+                                throw new Error(`SHA error: ${errorMessage}. File may have been modified. Try refreshing and uploading again.`);
+                            }
+                            throw new Error(errorMessage);
+                        }
+
+                        showMessage(`Icon uploaded to GitHub for ${product.data.title}`, 'success');
+                    } catch (error) {
+                        console.error('GitHub upload failed:', error);
+                        showMessage(`GitHub upload failed: ${error.message}`, 'error');
+                    }
+                }
+
+                // Update local preview
+                product.iconUrl = dataUrl;
+                
+                // Track icon change for later sync when pushing
+                product.iconChanged = true;
+                product.iconPath = `${product.folderName}/${iconFileName}`;
+                product.iconBase64 = base64Content;
+
+                // Update thumbnail metafield to ensure it matches the icon filename
+                if (!product.data.metafields) {
+                    product.data.metafields = [];
+                }
+                const thumbnailField = product.data.metafields.find(m => m.key === 'thumbnail');
+                if (thumbnailField) {
+                    // Update existing metafield to match the icon filename
+                    thumbnailField.value = iconFileName;
+                } else {
+                    // Create new metafield if it doesn't exist
+                    product.data.metafields.push({
+                        namespace: 'no3d_tools',
+                        key: 'thumbnail',
+                        value: iconFileName,
+                        type: 'single_line_text_field'
+                    });
+                }
+                
+                // Store icon filename in product object for future reference
+                product.iconFileName = iconFileName;
+
+                markDirty(index);
+
+                // Re-render the product card
+                renderProducts();
+
+            } catch (error) {
+                console.error('Icon upload failed:', error);
+                showMessage(`Failed to upload icon: ${error.message}`, 'error');
+
+                // Restore the zone
+                renderProducts();
+            }
+        }
+
+        function ensureChangelog(index) {
+            if (!products[index].data.changelog) {
+                products[index].data.changelog = [];
+            }
+        }
+
+        function updateChangelogEntry(index, entryIndex, field, value) {
+            ensureChangelog(index);
+            if (!products[index].data.changelog[entryIndex]) {
+                products[index].data.changelog[entryIndex] = { version: '', date: '', changes: [] };
+            }
+            products[index].data.changelog[entryIndex][field] = value;
+            markDirty(index);
+        }
+
+        function updateChangelogChange(index, entryIndex, changeIndex, value) {
+            ensureChangelog(index);
+            if (!products[index].data.changelog[entryIndex]) {
+                products[index].data.changelog[entryIndex] = { version: '', date: '', changes: [] };
+            }
+            // Normalize changes to array if it's a string
+            if (typeof products[index].data.changelog[entryIndex].changes === 'string') {
+                products[index].data.changelog[entryIndex].changes = [products[index].data.changelog[entryIndex].changes];
+            }
+            if (!Array.isArray(products[index].data.changelog[entryIndex].changes)) {
+                products[index].data.changelog[entryIndex].changes = [];
+            }
+            products[index].data.changelog[entryIndex].changes[changeIndex] = value;
+            markDirty(index);
+        }
+
+        function addChangelogEntry(index) {
+            ensureChangelog(index);
+            const today = new Date().toISOString().split('T')[0];
+            products[index].data.changelog.push({
+                version: '',
+                date: today,
+                changes: ['']
+            });
+            markDirty(index);
+            renderProducts();
+        }
+
+        /**
+         * Auto-add changelog entry with default message (for bulk operations)
+         */
+        function autoAddChangelogEntry(index, defaultMessage = 'Minor bug fixes') {
+            ensureChangelog(index);
+            const today = new Date().toISOString().split('T')[0];
+            
+            // Check if there's already a changelog entry for today with the same message
+            const existingEntry = products[index].data.changelog.find(entry => 
+                entry.date === today && 
+                Array.isArray(entry.changes) && 
+                entry.changes.includes(defaultMessage)
+            );
+            
+            // Only add if it doesn't already exist
+            if (!existingEntry) {
+                products[index].data.changelog.unshift({
+                    version: '',
+                    date: today,
+                    changes: [defaultMessage]
+                });
+                markDirty(index);
+            }
+        }
+
+        /**
+         * Prompt user for changelog comment (for individual syncs)
+         * Returns a promise that resolves to the comment or null if user opts out
+         */
+        function promptChangelogComment(productName) {
+            return new Promise((resolve) => {
+                // Create modal
+                const modal = document.createElement('div');
+                modal.className = 'modal';
+                modal.id = 'changelogModal';
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width: 500px;">
+                        <h2 style="margin-bottom: 1rem;">Add Changelog Entry</h2>
+                        <p style="margin-bottom: 1rem; color: #666;">
+                            Add a changelog entry for <strong>${escapeHtml(productName)}</strong>?
+                        </p>
+                        <div class="form-group">
+                            <label class="form-label">Changelog Comment (optional)</label>
+                            <textarea id="changelogComment" class="form-input" 
+                                      placeholder="e.g., Fixed pricing bug, Updated description, etc."
+                                      rows="3" style="resize: vertical;"></textarea>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;">
+                            <button class="btn btn-secondary" onclick="closeChangelogModal(null)">Skip</button>
+                            <button class="btn btn-primary" onclick="closeChangelogModal(document.getElementById('changelogComment').value.trim())">Add Entry</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                modal.classList.add('open');
+
+                // Store resolve function globally so modal buttons can access it
+                window._changelogModalResolve = resolve;
+
+                // Close modal when clicking outside
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeChangelogModal(null);
+                    }
+                });
+
+                // Focus textarea
+                setTimeout(() => {
+                    const textarea = document.getElementById('changelogComment');
+                    if (textarea) textarea.focus();
+                }, 100);
+
+                // Handle Enter key (Ctrl/Cmd + Enter to submit)
+                const textarea = document.getElementById('changelogComment');
+                if (textarea) {
+                    textarea.addEventListener('keydown', (e) => {
+                        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                            closeChangelogModal(textarea.value.trim());
+                        }
+                    });
+                }
+            });
+        }
+
+        function closeChangelogModal(comment) {
+            const modal = document.getElementById('changelogModal');
+            if (modal) {
+                modal.classList.remove('open');
+                setTimeout(() => modal.remove(), 300);
+            }
+            if (window._changelogModalResolve) {
+                window._changelogModalResolve(comment);
+                window._changelogModalResolve = null;
+            }
+        }
+
+        function removeChangelogEntry(index, entryIndex) {
+            ensureChangelog(index);
+            products[index].data.changelog.splice(entryIndex, 1);
+            markDirty(index);
+            renderProducts();
+        }
+
+        function addChangelogChange(index, entryIndex) {
+            ensureChangelog(index);
+            if (!products[index].data.changelog[entryIndex]) {
+                products[index].data.changelog[entryIndex] = { version: '', date: '', changes: [] };
+            }
+            // Normalize changes to array if it's a string
+            if (typeof products[index].data.changelog[entryIndex].changes === 'string') {
+                products[index].data.changelog[entryIndex].changes = [products[index].data.changelog[entryIndex].changes];
+            }
+            if (!Array.isArray(products[index].data.changelog[entryIndex].changes)) {
+                products[index].data.changelog[entryIndex].changes = [];
+            }
+            products[index].data.changelog[entryIndex].changes.push('');
+            markDirty(index);
+            renderProducts();
+        }
+
+        function removeChangelogChange(index, entryIndex, changeIndex) {
+            ensureChangelog(index);
+            if (products[index].data.changelog[entryIndex]) {
+                // Normalize changes to array if it's a string
+                if (typeof products[index].data.changelog[entryIndex].changes === 'string') {
+                    products[index].data.changelog[entryIndex].changes = [products[index].data.changelog[entryIndex].changes];
+                }
+                if (Array.isArray(products[index].data.changelog[entryIndex].changes)) {
+                    products[index].data.changelog[entryIndex].changes.splice(changeIndex, 1);
+                    // Remove entry if no changes left
+                    if (products[index].data.changelog[entryIndex].changes.length === 0) {
+                        products[index].data.changelog.splice(entryIndex, 1);
+                    }
+                    markDirty(index);
+                    renderProducts();
+                }
+            }
+        }
+
+        function markDirty(index) {
+            dirtyProducts.add(index);
+            const card = document.querySelectorAll('.product-card')[index];
+            if (card) {
+                card.classList.add('dirty');
+                // Update individual push button
+                const pushBtn = card.querySelector('button[onclick*="pushProductToGitHub"]');
+                if (pushBtn) {
+                    pushBtn.disabled = false;
+                    pushBtn.textContent = '📤 Push';
+                }
+            }
+            document.getElementById('saveBtn').disabled = dirtyProducts.size === 0;
+            document.getElementById('pushAllBtn').disabled = dirtyProducts.size === 0 || !repoConfig.token;
+        }
+
+        function validateProduct(index) {
+            const product = products[index].data;
+            const card = document.querySelectorAll('.product-card')[index];
+            
+            // Validate price format
+            const priceLabel = Array.from(card.querySelectorAll('.form-label')).find(label => label.textContent === 'Price');
+            if (priceLabel) {
+                const priceInput = priceLabel.nextElementSibling;
+                if (priceInput && priceInput.tagName === 'INPUT') {
+                    const price = product.variants && product.variants[0] ? product.variants[0].price : '0.00';
+                    if (!/^\d+\.\d{2}$/.test(price)) {
+                        priceInput.classList.add('invalid');
+                    } else {
+                        priceInput.classList.remove('invalid');
+                    }
+                }
+            }
+        }
+
+        function exportChanges() {
+            if (dirtyProducts.size === 0) {
+                showMessage('No changes to export', 'error');
+                return;
+            }
+
+            try {
+                const savedIndices = Array.from(dirtyProducts);
+                const exportData = {
+                    repo: `${repoConfig.owner}/${repoConfig.repo}`,
+                    branch: repoConfig.branch,
+                    timestamp: new Date().toISOString(),
+                    products: []
+                };
+
+                for (const index of savedIndices) {
+                    const product = products[index];
+                    const jsonText = JSON.stringify(product.data, null, 2);
+                    
+                    // Validate JSON
+                    try {
+                        JSON.parse(jsonText);
+                    } catch (e) {
+                        showMessage(`Invalid JSON for ${product.data.title}: ${e.message}`, 'error');
+                        continue;
+                    }
+
+                    exportData.products.push({
+                        path: product.jsonPath,
+                        filename: product.jsonFileName,
+                        content: jsonText
+                    });
+                }
+
+                // Create downloadable JSON file
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `product-changes-${Date.now()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                showMessage(`Exported ${exportData.products.length} product(s). Review and commit manually.`, 'success');
+            } catch (error) {
+                showMessage('Error exporting: ' + error.message, 'error');
+            }
+        }
+
+        async function getFileSHA(filePath) {
+            try {
+                const fileData = await fetchGitHubAPI(`/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${filePath}?ref=${repoConfig.branch}`);
+                return fileData ? fileData.sha : null;
+            } catch (error) {
+                // File might not exist yet
+                return null;
+            }
+        }
+
+        async function updateFileOnGitHub(filePath, content, message) {
+            const sha = await getFileSHA(filePath);
+            const contentBase64 = btoa(unescape(encodeURIComponent(content)));
+            
+            const body = {
+                message: message,
+                content: contentBase64,
+                branch: repoConfig.branch
+            };
+            
+            if (sha) {
+                body.sha = sha;
+            }
+            
+            const response = await fetchGitHubAPI(`/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${filePath}`, {
+                method: 'PUT',
+                body: JSON.stringify(body)
+            });
+            
+            return response;
+        }
+
+        async function syncLocalFile(filePath, content, libraryId = null) {
+            // Use active library ID if not specified
+            const targetLibraryId = libraryId || (activeLibrary ? activeLibrary.id : null);
+
+            // Check if running in Electron
+            if (window.electron && window.electron.isElectron) {
+                try {
+                    console.log(`💾 Syncing local file (Electron): ${filePath} [${targetLibraryId || 'default'}]`);
+                    const result = await window.electron.saveProductFile(filePath, content, targetLibraryId);
+
+                    if (result.success) {
+                        console.log(`✅ Local file synced: ${filePath}`);
+                        console.log(`   Size: ${result.size} bytes`);
+                        return result;
+                    } else {
+                        throw new Error(result.error);
+                    }
+                } catch (error) {
+                    console.error('❌ Failed to sync local file:', error);
+                    showMessage(`Local sync failed: ${error.message}`, 'error');
+                    return null;
+                }
+            } else {
+                // Browser mode - use server endpoint
+                try {
+                    console.log(`🔄 Syncing local file: ${filePath}`);
+                    console.log(`   Content length: ${content.length} characters`);
+                    
+                    const response = await fetch('/api/sync-local-file', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ filePath, content })
+                    });
+                    
+                    console.log(`   Response status: ${response.status} ${response.statusText}`);
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error(`❌ Sync failed - Response:`, errorText);
+                        let error;
+                        try {
+                            error = JSON.parse(errorText);
+                        } catch (e) {
+                            error = { error: errorText || `HTTP ${response.status}` };
+                        }
+                        throw new Error(error.error || 'Failed to sync local file');
+                    }
+                    
+                    const result = await response.json();
+                    console.log(`✅ Local file synced: ${filePath}`);
+                    console.log(`   File size: ${result.size || 'unknown'} bytes`);
+                    return result;
+                } catch (error) {
+                    console.error('❌ Failed to sync local file:', error);
+                    console.error('   Error details:', {
+                        message: error.message,
+                        stack: error.stack
+                    });
+                    showMessage(`Warning: Local file sync failed: ${error.message}`, 'error');
+                    // Don't throw - this is a convenience feature, not critical
+                    return null;
+                }
+            }
+        }
+
+        async function syncLocalIcon(iconPath, base64Content) {
+            // Check if running in Electron
+            if (window.electron && window.electron.isElectron) {
+                try {
+                    console.log(`💾 Syncing local icon (Electron): ${iconPath}`);
+                    const result = await window.electron.saveIconFile(iconPath, base64Content);
+
+                    if (result.success) {
+                        console.log(`✅ Local icon synced: ${iconPath}`);
+                        console.log(`   Size: ${result.size} bytes`);
+                        return result;
+                    } else {
+                        throw new Error(result.error);
+                    }
+                } catch (error) {
+                    console.error('Electron icon sync failed:', error);
+                    throw error;
+                }
+            } else {
+                // Browser mode - use server endpoint for icon sync
+                try {
+                    console.log(`🔄 Syncing local icon: ${iconPath}`);
+                    
+                    const response = await fetch('/api/sync-local-icon', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ filePath: iconPath, base64Content })
+                    });
+                    
+                    console.log(`   Response status: ${response.status} ${response.statusText}`);
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error(`❌ Icon sync failed - Response:`, errorText);
+                        let error;
+                        try {
+                            error = JSON.parse(errorText);
+                        } catch (e) {
+                            error = { error: errorText || `HTTP ${response.status}` };
+                        }
+                        throw new Error(error.error || 'Failed to sync local icon');
+                    }
+                    
+                    const result = await response.json();
+                    console.log(`✅ Local icon synced: ${iconPath}`);
+                    console.log(`   File size: ${result.size || 'unknown'} bytes`);
+                    return result;
+                } catch (error) {
+                    console.error('❌ Failed to sync local icon:', error);
+                    console.error('   Error details:', {
+                        message: error.message,
+                        stack: error.stack
+                    });
+                    showMessage(`Warning: Local icon sync failed: ${error.message}`, 'error');
+                    // Don't throw - this is a convenience feature, not critical
+                    return null;
+                }
+            }
+        }
+
+        async function pushProductToGitHub(index) {
+            if (!repoConfig.token) {
+                showMessage('GitHub token required. Please configure in settings.', 'error');
+                return;
+            }
+
+            const product = products[index];
+            if (!dirtyProducts.has(index)) {
+                showMessage('No changes to push for this product', 'error');
+                return;
+            }
+
+            const pushBtn = document.querySelectorAll('.product-card')[index]?.querySelector('button[onclick*="pushProductToGitHub"]');
+            if (pushBtn) {
+                pushBtn.disabled = true;
+                pushBtn.textContent = '⏳ Pushing...';
+            }
+
+            try {
+                // Prompt user for changelog comment (individual sync)
+                const changelogComment = await promptChangelogComment(product.data.title);
+                
+                // Add changelog entry if user provided a comment
+                if (changelogComment && changelogComment.trim()) {
+                    ensureChangelog(index);
+                    const today = new Date().toISOString().split('T')[0];
+                    products[index].data.changelog.unshift({
+                        version: '',
+                        date: today,
+                        changes: [changelogComment.trim()]
+                    });
+                    markDirty(index);
+                    // Re-render to show the new changelog entry
+                    renderProducts();
+                }
+                // STEP 1: Sync to Polar first
+                if (pushBtn) pushBtn.textContent = '⏳ Syncing to Polar...';
+
+                try {
+                    const polarResponse = await fetch('/api/sync-to-polar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ productData: product.data })
+                    });
+
+                    const polarResult = await polarResponse.json();
+
+                    if (!polarResult.success) {
+                        throw new Error(`Polar sync failed: ${polarResult.error}`);
+                    }
+
+                    console.log(`✅ Synced to Polar: ${polarResult.action} ${polarResult.name} - ${polarResult.price}`);
+
+                    // Update product with returned IDs (if new)
+                    if (!product.data.polar) {
+                        product.data.polar = {};
+                    }
+                    product.data.polar.product_id = polarResult.productId;
+                    product.data.polar.price_id = polarResult.priceId;
+
+                } catch (polarError) {
+                    console.error('Polar sync error:', polarError);
+                    showMessage(`⚠️ Polar sync failed: ${polarError.message}. Continuing with GitHub push...`, 'error');
+                    // Continue with GitHub push even if Polar fails
+                }
+
+                // STEP 2: Regenerate polar-products.js with updated price IDs
+                if (pushBtn) pushBtn.textContent = '⏳ Updating price mapping...';
+
+                try {
+                    const regenResponse = await fetch('/api/regenerate-polar-products', {
+                        method: 'POST'
+                    });
+
+                    const regenResult = await regenResponse.json();
+
+                    if (!regenResult.success) {
+                        console.warn('⚠️ Failed to regenerate polar-products.js:', regenResult.error);
+                    } else {
+                        console.log(`✅ Regenerated polar-products.js with ${regenResult.productCount} products`);
+                    }
+                } catch (regenError) {
+                    console.error('Polar products regeneration error:', regenError);
+                    // Continue even if this fails
+                }
+
+                // STEP 3: Push to GitHub
+                if (pushBtn) pushBtn.textContent = '⏳ Pushing to GitHub...';
+
+                const jsonText = JSON.stringify(product.data, null, 2);
+
+                // Validate JSON
+                JSON.parse(jsonText);
+
+                const commitMessage = `Update ${product.data.title} from dashboard`;
+                await updateFileOnGitHub(product.jsonPath, jsonText, commitMessage);
+
+                // Sync local JSON file to match GitHub (after successful push)
+                let syncError = null;
+                try {
+                    await syncLocalFile(product.jsonPath, jsonText);
+                } catch (error) {
+                    syncError = error;
+                    // Log but don't fail the push
+                    console.error('Local JSON sync error (non-critical):', error);
+                }
+
+                // Sync local icon if it was changed
+                if (product.iconChanged && product.iconPath && product.iconBase64) {
+                    try {
+                        await syncLocalIcon(product.iconPath, product.iconBase64);
+                        product.iconChanged = false; // Mark as synced
+                    } catch (error) {
+                        console.error('Local icon sync error (non-critical):', error);
+                    }
+                }
+
+                // Mark as clean
+                dirtyProducts.delete(index);
+                const card = document.querySelectorAll('.product-card')[index];
+                if (card) {
+                    card.classList.remove('dirty');
+                }
+
+                // Update button
+                if (pushBtn) {
+                    pushBtn.textContent = '✓ Synced';
+                    pushBtn.disabled = true;
+                }
+
+                // Update global buttons
+                document.getElementById('saveBtn').disabled = dirtyProducts.size === 0;
+                document.getElementById('pushAllBtn').disabled = dirtyProducts.size === 0 || !repoConfig.token;
+
+                // Show success message, then error if sync failed (with delay so both are visible)
+                showMessage(`✅ Synced ${product.data.title} to Polar & GitHub`, 'success');
+                if (syncError) {
+                    setTimeout(() => {
+                        showMessage(`⚠️ GitHub push succeeded, but local sync failed: ${syncError.message}`, 'error');
+                    }, 500);
+                }
+            } catch (error) {
+                showMessage(`Error pushing ${product.data.title}: ${error.message}`, 'error');
+                if (pushBtn) {
+                    pushBtn.disabled = false;
+                    pushBtn.textContent = '📤 Push';
+                }
+            }
+        }
+
+        async function pushAllChangesToGitHub() {
+            if (!repoConfig.token) {
+                showMessage('GitHub token required. Please configure in settings.', 'error');
+                return;
+            }
+
+            if (dirtyProducts.size === 0) {
+                showMessage('No changes to push', 'error');
+                return;
+            }
+
+            const pushBtn = document.getElementById('pushAllBtn');
+            const originalText = pushBtn.textContent;
+            pushBtn.disabled = true;
+            pushBtn.textContent = '⏳ Pushing...';
+            document.body.classList.add('loading');
+
+            let successCount = 0;
+            let errorCount = 0;
+            const errors = [];
+
+            try {
+                const dirtyIndices = Array.from(dirtyProducts);
+
+                for (const index of dirtyIndices) {
+                    const product = products[index];
+                    try {
+                        // Auto-add changelog entry with default message for bulk push
+                        autoAddChangelogEntry(index, 'Minor bug fixes');
+                        
+                        // STEP 1: Sync to Polar first
+                        try {
+                            const polarResponse = await fetch('/api/sync-to-polar', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ productData: product.data })
+                            });
+
+                            const polarResult = await polarResponse.json();
+
+                            if (!polarResult.success) {
+                                throw new Error(`Polar sync failed: ${polarResult.error}`);
+                            }
+
+                            console.log(`✅ Synced to Polar: ${polarResult.action} ${polarResult.name} - ${polarResult.price}`);
+
+                            // Update product with returned IDs (if new)
+                            if (!product.data.polar) {
+                                product.data.polar = {};
+                            }
+                            product.data.polar.product_id = polarResult.productId;
+                            product.data.polar.price_id = polarResult.priceId;
+
+                        } catch (polarError) {
+                            console.error(`Polar sync error for ${product.data.title}:`, polarError);
+                            errors.push({ product: product.data.title, error: polarError.message, type: 'polar' });
+                            // Continue with GitHub push even if Polar fails
+                        }
+
+                        // STEP 2: Push to GitHub
+                        const jsonText = JSON.stringify(product.data, null, 2);
+
+                        // Validate JSON
+                        JSON.parse(jsonText);
+
+                        const commitMessage = `Update ${product.data.title} from dashboard`;
+                        await updateFileOnGitHub(product.jsonPath, jsonText, commitMessage);
+
+                        // Sync local JSON file to match GitHub (after successful push)
+                        let syncError = null;
+                        try {
+                            await syncLocalFile(product.jsonPath, jsonText);
+                        } catch (error) {
+                            syncError = error;
+                            // Log but don't fail the push
+                            console.error(`Local JSON sync error for ${product.data.title} (non-critical):`, error);
+                        }
+
+                        // Sync local icon if it was changed
+                        if (product.iconChanged && product.iconPath && product.iconBase64) {
+                            try {
+                                await syncLocalIcon(product.iconPath, product.iconBase64);
+                                product.iconChanged = false; // Mark as synced
+                            } catch (error) {
+                                console.error(`Local icon sync error for ${product.data.title} (non-critical):`, error);
+                            }
+                        }
+
+                        // Track sync errors for summary
+                        if (syncError) {
+                            errors.push({ product: product.data.title, error: syncError.message, type: 'sync' });
+                        }
+
+                        // Mark as clean
+                        dirtyProducts.delete(index);
+                        const card = document.querySelectorAll('.product-card')[index];
+                        if (card) {
+                            card.classList.remove('dirty');
+                            const productPushBtn = card.querySelector('button[onclick*="pushProductToGitHub"]');
+                            if (productPushBtn) {
+                                productPushBtn.textContent = '✓ Synced';
+                                productPushBtn.disabled = true;
+                            }
+                        }
+
+                        successCount++;
+                    } catch (error) {
+                        errorCount++;
+                        errors.push({ product: product.data.title, error: error.message, type: 'push' });
+                        console.error(`Error pushing ${product.data.title}:`, error);
+                    }
+                }
+
+                // Regenerate polar-products.js after all products synced
+                if (successCount > 0) {
+                    try {
+                        const regenResponse = await fetch('/api/regenerate-polar-products', {
+                            method: 'POST'
+                        });
+
+                        const regenResult = await regenResponse.json();
+
+                        if (regenResult.success) {
+                            console.log(`✅ Regenerated polar-products.js with ${regenResult.productCount} products`);
+                        }
+                    } catch (regenError) {
+                        console.error('Failed to regenerate polar-products.js:', regenError);
+                        errors.push({ product: 'polar-products.js', error: regenError.message, type: 'regen' });
+                    }
+                }
+
+                // Update global buttons
+                document.getElementById('saveBtn').disabled = dirtyProducts.size === 0;
+                document.getElementById('pushAllBtn').disabled = dirtyProducts.size === 0 || !repoConfig.token;
+
+                if (errorCount === 0 && errors.length === 0) {
+                    showMessage(`✅ Successfully synced ${successCount} product(s) to Polar & GitHub`, 'success');
+                } else {
+                    const pushErrors = errors.filter(e => e.type === 'push');
+                    const syncErrors = errors.filter(e => e.type === 'sync');
+                    const polarErrors = errors.filter(e => e.type === 'polar');
+
+                    if (pushErrors.length > 0) {
+                        showMessage(`⚠️ Pushed ${successCount} product(s), ${pushErrors.length} failed. Check console for details.`, 'error');
+                        console.error('Push errors:', pushErrors);
+                    } else {
+                        // Only push errors, no sync errors - show success
+                        showMessage(`✅ Successfully synced ${successCount} product(s) to Polar & GitHub`, 'success');
+                    }
+
+                    if (polarErrors.length > 0) {
+                        setTimeout(() => {
+                            showMessage(`⚠️ ${polarErrors.length} Polar sync(s) failed. GitHub push succeeded. Check console.`, 'error');
+                        }, 500);
+                        console.error('Polar sync errors:', polarErrors);
+                    }
+                    
+                    if (syncErrors.length > 0) {
+                        setTimeout(() => {
+                            showMessage(`⚠️ GitHub push succeeded, but ${syncErrors.length} local sync(s) failed. Check console for details.`, 'error');
+                        }, 500);
+                        console.error('Local sync errors:', syncErrors);
+                    }
+                }
+                
+                // Re-render to update all buttons
+                renderProducts();
+            } catch (error) {
+                showMessage(`Error pushing changes: ${error.message}`, 'error');
+            } finally {
+                pushBtn.disabled = dirtyProducts.size === 0 || !repoConfig.token;
+                pushBtn.textContent = originalText;
+                document.body.classList.remove('loading');
+            }
+        }
+
+        function filterProducts() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            let filtered = products.map((product, index) => ({ product, index })).filter(({ product }) => {
+                const matchesSearch = product.data.title.toLowerCase().includes(searchTerm) ||
+                                    product.data.description.toLowerCase().includes(searchTerm) ||
+                                    product.data.tags.some(tag => tag.toLowerCase().includes(searchTerm));
+                const matchesStatus = !statusFilter || product.data.status === statusFilter;
+                return matchesSearch && matchesStatus;
+            });
+
+            renderFilteredProducts(filtered);
+        }
+
+        function sortProducts() {
+            const sortBy = document.getElementById('sortSelect').value;
+            const sorted = products.map((product, index) => ({ product, index })).sort((a, b) => {
+                if (sortBy === 'name') {
+                    return a.product.data.title.localeCompare(b.product.data.title);
+                } else if (sortBy === 'status') {
+                    return a.product.data.status.localeCompare(b.product.data.status);
+                }
+                return 0;
+            });
+            renderFilteredProducts(sorted);
+        }
+
+        function renderFilteredProducts(filteredProducts) {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = '';
+
+            if (filteredProducts.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><h2>No Products Match Filters</h2></div>';
+                return;
+            }
+
+            filteredProducts.forEach(({ product, index }) => {
+                const card = createProductCard(product, index);
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleCollapsible(header) {
+            const content = header.nextElementSibling;
+            const isOpen = content.classList.contains('open');
+            content.classList.toggle('open', !isOpen);
+            header.querySelector('span:last-child').textContent = isOpen ? '▼' : '▲';
+        }
+
+        function showImageModal(imageUrl) {
+            document.getElementById('modalImage').src = imageUrl;
+            document.getElementById('imageModal').classList.add('open');
+        }
+
+        function updateProductCount() {
+            document.getElementById('productCount').textContent = `${products.length} products`;
+        }
+
+        function showMessage(text, type) {
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            document.body.appendChild(message);
+
+            // Error messages persist longer and appear on top
+            const duration = type === 'error' ? 6000 : 3000;
+            if (type === 'error') {
+                message.style.zIndex = '10000';
+                message.style.backgroundColor = '#ff4444';
+            }
+
+            setTimeout(() => {
+                message.remove();
+            }, duration);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes || bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        // Make functions globally accessible
+        window.updateProduct = updateProduct;
+        window.updateProductPrice = updateProductPrice;
+        window.updateProductTags = updateProductTags;
+        window.handleMediaDragOver = handleMediaDragOver;
+        window.handleMediaDragLeave = handleMediaDragLeave;
+        window.handleMediaDrop = handleMediaDrop;
+        window.handleMediaFileSelect = handleMediaFileSelect;
+        window.handleMediaFileNameChange = handleMediaFileNameChange;
+        window.updateChangelogEntry = updateChangelogEntry;
+        window.updateChangelogChange = updateChangelogChange;
+        window.addChangelogEntry = addChangelogEntry;
+        window.removeChangelogEntry = removeChangelogEntry;
+        window.addChangelogChange = addChangelogChange;
+        window.removeChangelogChange = removeChangelogChange;
+        window.pushProductToGitHub = pushProductToGitHub;
+        window.toggleCollapsible = toggleCollapsible;
+        window.showImageModal = showImageModal;
+        window.saveConfig = saveConfig;
+        window.closeConfigModal = closeConfigModal;
+
+        // Auto-load if config exists
+        if (savedConfig) {
+            document.getElementById('loadBtn').disabled = false;
+        }
+    </script>
+</body>
+</html>
+
