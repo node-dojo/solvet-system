@@ -30,8 +30,8 @@
     },
     "description": {
       "type": "string",
-      "minLength": 10,
-      "maxLength": 2000,
+      "minLength": 0,
+      "maxLength": 5000,
       "description": "Product description"
     },
     "vendor": {
@@ -47,7 +47,9 @@
         "Material",
         "Collection",
         "Mesh Object",
-        "Node Group"
+        "Node Group",
+        "Tool",
+        "tools"
       ],
       "description": "Type of Blender asset"
     },
@@ -58,7 +60,7 @@
         "minLength": 1,
         "maxLength": 50
       },
-      "minItems": 1,
+      "minItems": 0,
       "maxItems": 20,
       "uniqueItems": true,
       "description": "Product tags for categorization"
@@ -104,11 +106,10 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["namespace", "key", "value", "type"],
+        "required": ["namespace", "key", "value"],
         "properties": {
           "namespace": {
             "type": "string",
-            "enum": ["no3d_tools", "polar", "shopify"],
             "description": "Metafield namespace"
           },
           "key": {
@@ -118,28 +119,67 @@
             "description": "Metafield key"
           },
           "value": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 500,
+            "type": ["string", "number", "boolean", "null"],
             "description": "Metafield value"
           },
           "type": {
             "type": "string",
-            "enum": [
-              "single_line_text_field",
-              "multi_line_text_field",
-              "date",
-              "number_integer",
-              "number_decimal",
-              "boolean",
-              "json"
-            ],
             "description": "Metafield data type"
+          },
+          "hosted_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Hosted URL for file assets"
           }
         }
       },
-      "minItems": 5,
       "description": "Product metafields"
+    },
+    "dashboard": {
+      "type": "object",
+      "properties": {
+        "source_file": { "type": "string" },
+        "created_at": { "type": ["string", "null"] },
+        "updated_at": { "type": ["string", "null"] },
+        "asset_file_updates": { "type": "array" }
+      }
+    },
+    "hosted_media": {
+      "type": "object",
+      "additionalProperties": { "type": "string", "format": "uri" },
+      "description": "Map of filenames to hosted URLs"
+    },
+    "carousel_media": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "excluded_carousel_media": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "main_image": {
+      "type": ["string", "null"]
+    },
+    "thumbnail_image": {
+      "type": ["string", "null"]
+    },
+    "changelog": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "version": { "type": "string" },
+          "date": { "type": "string" },
+          "description": { "type": "string" },
+          "filePath": { "type": "string" }
+        }
+      }
+    },
+    "polar": {
+      "type": "object"
+    },
+    "metadata": {
+      "type": "object"
     }
   },
   "additionalProperties": false

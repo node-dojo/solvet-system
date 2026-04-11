@@ -31,7 +31,7 @@ const PORT = 3000;
 // Configuration
 const LIBRARY_PATH = path.join(__dirname, '..', 'no3d-tools-library');
 const WEBSITE_PATH = path.join(__dirname, '..', 'no3d-tools-website');
-const POLAR_ORG_ID = process.env.POLAR_ORG_ID || 'f0c16049-5959-42c9-8be8-5952c38c7d63';
+const POLAR_ORG_ID = process.env.POLAR_ORG_ID;
 
 // Middleware
 app.use(cors());
@@ -495,14 +495,14 @@ const POLAR_PRODUCTS = {\n`;
       fileContent += `    productId: '${entry.productId}',\n`;
       fileContent += `    priceId: '${entry.priceId}',\n`;
       fileContent += `    name: '${entry.name}',\n`;
-      fileContent += `    url: 'https://polar.sh/no3d-tools'\n`;
+      fileContent += `    url: 'https://polar.sh/no3d-tools/portal'\n`;
       fileContent += `  },\n`;
     }
 
     fileContent += `};
 
 // Polar organization base URL (checkout links)
-const POLAR_ORG_URL = 'https://polar.sh/no3d-tools';
+const POLAR_ORG_URL = 'https://polar.sh/no3d-tools/portal';
 
 // Export for use in website
 if (typeof module !== 'undefined' && module.exports) {
